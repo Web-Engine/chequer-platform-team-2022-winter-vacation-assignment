@@ -1,3 +1,3 @@
 # CsvLite
-The name of CsvLite is inspired of SQLite
+The name of CsvLite was inspired of SQLite
 
