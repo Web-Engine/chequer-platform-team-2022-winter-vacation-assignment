@@ -2,13 +2,11 @@
 
 namespace CsvLite.Models.Attributes;
 
-public interface IAttribute : IReadOnlyAttribute
+public interface IAttribute
 {
-    string IReadOnlyAttribute.Name => Name;
-
-    IDomain IReadOnlyAttribute.Domain => Domain;
+    string[] Alias { get; }
     
-    new string Name { get; set; }
+    string Name { get; }
     
-    new IDomain Domain { get; set; }
+    IDomain Domain { get; }
 }

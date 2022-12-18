@@ -3,17 +3,7 @@
 namespace CsvLite.Models.Schemas;
 
 
-public interface ISchema : IReadOnlySchema
+public interface ISchema
 {
-    IReadOnlyDictionary<string, IReadOnlyRelation> IReadOnlySchema.Relations {
-        get
-        {
-            return Relations.ToDictionary(
-                pair => pair.Key,
-                pair => pair.Value as IReadOnlyRelation
-            );
-        }
-    }
-     
-    new IDictionary<string, IRelation> Relations { get; }
+    IDictionary<string, IRelation> Relations { get; }
 }

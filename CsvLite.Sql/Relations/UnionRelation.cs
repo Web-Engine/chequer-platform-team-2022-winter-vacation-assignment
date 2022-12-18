@@ -1,15 +1,16 @@
 ﻿using System.Dynamic;
 using CsvLite.Models.Attributes;
+using CsvLite.Models.Relations;
 using CsvLite.Models.Tuples;
 
-namespace CsvLite.Models.Relations;
+namespace CsvLite.Sql.Relations;
 
 public class UnionRelation : IRelation
 {
     private readonly IRelation _previous;
     private readonly IRelation _next;
     
-    public IList<IAttribute> Attributes => _previous.Attributes;
+    public IEnumerable<IAttribute> Attributes => _previous.Attributes;
 
     public IEnumerable<ITuple> Tuples
     {
@@ -22,6 +23,9 @@ public class UnionRelation : IRelation
 
     public UnionRelation(IRelation previous, IRelation next)
     {
+        if (previous.Attributes.Count() != next.Attributes.Count())
+            throw new Exception("Cannot union difference attribute size relations");
+        
         _previous = previous;
         _next = next;
     }

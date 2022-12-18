@@ -3,11 +3,9 @@ using CsvLite.Models.Tuples;
 
 namespace CsvLite.Models.Relations;
 
-public interface IRelation : IReadOnlyRelation
+public interface IRelation
 {
-    IEnumerable<IReadOnlyAttribute> IReadOnlyRelation.Attributes => Attributes;
-    
-    new IList<IAttribute> Attributes { get; }
+    IEnumerable<IAttribute> Attributes { get; }
     
     IEnumerable<ITuple> Tuples { get; }
 }
