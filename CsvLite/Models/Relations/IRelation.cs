@@ -1,11 +1,11 @@
 ﻿using CsvLite.Models.Attributes;
-using CsvLite.Models.Tuples;
+using CsvLite.Models.Records;
 
 namespace CsvLite.Models.Relations;
 
 public interface IRelation
 {
-    IEnumerable<IAttribute> Attributes { get; }
-    
-    IEnumerable<ITuple> Tuples { get; }
+    IAttributeList Attributes { get; }
+
+    IReadOnlyList<IRecord> Records { get; }
 }

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
@@ -10,6 +9,12 @@
     <ItemGroup>
       <ProjectReference Include="..\CsvLite.Sql\CsvLite.Sql.csproj" />
       <ProjectReference Include="..\CsvLite\CsvLite.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="datasets\*.csv">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

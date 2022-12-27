@@ -2,4 +2,5 @@
 *.DotSettings.user
 bin/
 obj/
+/CsvLite.Sql/gen
 .DS_Store

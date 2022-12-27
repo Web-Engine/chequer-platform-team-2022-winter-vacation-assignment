@@ -1,4 +1,5 @@
 using Antlr4.Runtime;
+using CsvLite.Sql.Parsers.Antlr;
 using NUnit.Framework;
 
 namespace CsvLite.Sql.Test;
@@ -19,9 +20,9 @@ public partial class SqlParserTest
     public void Test_Expression(string expression, string value)
     {
         var stream = new AntlrInputStream(expression);
-        var lexer = new SqlLexer(stream);
+        var lexer = new AntlrSqlLexer(stream);
         var tokens = new CommonTokenStream(lexer);
-        var parser = new SqlParser(tokens);
+        var parser = new AntlrSqlParser(tokens);
 
         var context = parser.expression();
         

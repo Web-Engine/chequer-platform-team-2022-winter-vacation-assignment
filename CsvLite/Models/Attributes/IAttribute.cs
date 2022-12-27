@@ -1,12 +1,10 @@
-﻿using CsvLite.Models.Domains;
+﻿using CsvLite.Models.Identifiers;
 
 namespace CsvLite.Models.Attributes;
 
 public interface IAttribute
 {
-    string[] Alias { get; }
+    QualifiedIdentifier Alias { get; }
     
-    string Name { get; }
-    
-    IDomain Domain { get; }
+    Identifier Name { get; }
 }

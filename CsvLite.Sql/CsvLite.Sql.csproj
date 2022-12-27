@@ -8,14 +8,16 @@
 
     <ItemGroup>
       <PackageReference Include="Antlr4.Runtime.Standard" Version="4.11.1" />
-      <PackageReference Include="Antlr4BuildTasks" Version="12.1.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Antlr4 Include="Antlr/Sql.g4" />
+      <PackageReference Include="Antlr4BuildTasks" Version="11.5.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\CsvLite\CsvLite.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Antlr4 Include="Parsers\Antlr\AntlrSql.g4">
+          <Package>CsvLite.Sql.Parsers.Antlr</Package>
+      </Antlr4>
     </ItemGroup>
 </Project>

@@ -1,9 +1,10 @@
-﻿using CsvLite.Models.Schemas;
-using CsvLite.Sql.Results;
+﻿using CsvLite.Models.Relations;
+using CsvLite.Models.Schemas;
+using CsvLite.Sql.Models.Results;
 
 namespace CsvLite.Sql.Actions;
 
 public interface ISqlAction
 {
-    ISqlActionResult Execute(ISchema scheme);
+    ISqlActionResult Execute(IPhysicalRelationProvider scheme);
 }
