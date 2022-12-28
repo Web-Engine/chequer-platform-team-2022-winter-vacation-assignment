@@ -21,7 +21,7 @@ internal class LimitRelationNode : IInheritRelationNode
     {
         return new InheritRelation(
             context.Relation,
-            context.Relation.Records.Take(_limit).ToList()
+            records: context.Relation.Records.Take(_limit)
         );
     }
 }

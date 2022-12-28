@@ -9,9 +9,9 @@ public class RelationEvaluator : IRelationEvaluator
 {
     private readonly RelationEvaluateContext _context;
 
-    public RelationEvaluator(IPhysicalRelationProvider physicalRelationProvider)
+    public RelationEvaluator(IRelationProvider relationProvider)
         : this(
-            new RelationEvaluateContext(physicalRelationProvider, new EmptyRelation())
+            new RelationEvaluateContext(relationProvider, new EmptyRelation())
         )
     {
     }
@@ -35,7 +35,7 @@ public class RelationEvaluator : IRelationEvaluator
 
     private IRelation EvaluateReferenceNode(IReferenceRelationNode node)
     {
-        return _context.PhysicalRelationProvider.GetRelation(node.Identifier);
+        return _context.RelationProvider.GetRelation(node.Identifier);
     }
 
     private IRelation EvaluateInheritNode(IInheritRelationNode node)

@@ -1,4 +1,3 @@
-using Antlr4.Runtime.Misc;
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Identifiers;
 
@@ -15,17 +14,13 @@ public class ExplicitAttributeReference : IAttributeReference
 
     public bool IsReferencing(IAttribute attribute)
     {
-        switch (_identifier.Level)
+        return _identifier.Level switch
         {
-            case 1:
-                return _identifier[0].Equals(attribute.Name);
+            1 => _identifier[0].Equals(attribute.Name),
+            2 => _identifier.Equals(attribute.Alias),
             
-            case 2:
-                return _identifier.Equals(attribute.Alias);
-
-            default:
-                throw new InvalidOperationException($"Wrong identifier level {_identifier.Level}");
-        }
+            _ => throw new InvalidOperationException($"Wrong identifier level {_identifier.Level}")
+        };
     }
 
     public override string ToString()

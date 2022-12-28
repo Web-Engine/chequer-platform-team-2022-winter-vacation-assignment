@@ -10,11 +10,13 @@ root
 
 statement
     : statementSelect               #statement_select
+    | statementInsert               #statement_insert
 ;
 
+//region SELECT
 statementSelect
-    :
-        SELECT selectItemList
+    : SELECT
+        selectItemList
         clauseFrom?
         clauseWhere?
         clauseGroupBy?
@@ -31,14 +33,6 @@ selectItem
     | expression (AS? alias=identifier)?                    #selectItem_expression
 ;
 
-referenceAttribute
-    : (relationIdentifier=identifier DOT__)? attributeIdentifier=identifier
-;
-
-referenceAllAttribute
-    : (relationIdentifier=identifier DOT__)? ASTERISK__
-;
-
 clauseFrom
     : FROM fromItemList
 ;
@@ -50,16 +44,6 @@ fromItemList
 fromItem
     : relation (AS? alias=identifier)? clauseJoin?
 ;
-
-referenceRelation
-    : relationIdentifier=identifier
-;
-
-relation
-    : referenceRelation                                         #relation_reference
-    | OPEN_PARENTHESIS__ statementSelect CLOSE_PARENTHESIS__    #relation_select
-;
-
 
 clauseWhere
     : WHERE expression
@@ -85,13 +69,40 @@ clauseLimit
     : LIMIT count=literalInteger
     | LIMIT offset=literalInteger COMMA__ count=literalInteger
 ;
+//endregion
+
+//region INSERT
+statementInsert
+    : INSERT INTO
+        relation
+        attributeList?
+        (VALUE | VALUES)
+        valueList (COMMA__ valueList)*
+;
+
+attributeList
+    : OPEN_PARENTHESIS__ attributeItem (COMMA__ attributeItem)* CLOSE_PARENTHESIS__
+;
+
+attributeItem
+    : attributeIdentifier=identifier
+;
+
+valueList
+    : OPEN_PARENTHESIS__ valueItem (COMMA__ valueItem)* CLOSE_PARENTHESIS__
+;
+
+valueItem
+    : expression
+;
+//endregion
 
 //region Expressions
 
 expression
-    : left=expression operator=AND right=expression                                             #expression_binaryBooleanAlgebra
+    : operator=NOT expression                                                                   #expression_unaryBooleanAlgebra
+    | left=expression operator=AND right=expression                                             #expression_binaryBooleanAlgebra
     | left=expression operator=OR right=expression                                              #expression_binaryBooleanAlgebra
-    | operator=NOT expression                                                                   #expression_unaryBooleanAlgebra
     | left=expressionValue
         operator=(
             EQ__ | NEQ__ | GT__ | GTE__ | LT__ | LTE__
@@ -133,6 +144,23 @@ expressionFunctionCall
 //endregion Expressions
 
 //region Commons
+referenceRelation
+    : relationIdentifier=identifier
+;
+
+referenceAttribute
+    : (relationIdentifier=identifier DOT__)? attributeIdentifier=identifier
+;
+
+referenceAllAttribute
+    : (relationIdentifier=identifier DOT__)? ASTERISK__
+;
+
+relation
+    : referenceRelation                                         #relation_reference
+    | OPEN_PARENTHESIS__ statementSelect CLOSE_PARENTHESIS__    #relation_select
+;
+
 identifier
     : IDENTIFIER                                                #identifier_unquoted
     | DOUBLE_QUOTED_TEXT                                        #identifier_quoted
@@ -193,6 +221,12 @@ ON: 'ON';
 
 ORDER: 'ORDER';
 LIMIT: 'LIMIT';
+
+INSERT: 'INSERT';
+INTO: 'INTO';
+VALUE: 'VALUE';
+VALUES: 'VALUES';
+
 NOT: 'NOT';
 
 AND: 'AND';

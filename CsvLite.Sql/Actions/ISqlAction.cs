@@ -6,5 +6,5 @@ namespace CsvLite.Sql.Actions;
 
 public interface ISqlAction
 {
-    ISqlActionResult Execute(IPhysicalRelationProvider scheme);
+    ISqlActionResult Execute(IRelationProvider scheme);
 }

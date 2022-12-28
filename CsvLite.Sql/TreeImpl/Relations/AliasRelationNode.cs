@@ -29,9 +29,9 @@ public class AliasRelationNode : IInheritRelationNode
 
         var attributeList = new DefaultAttributeList(attributes);
 
-        return new DefaultRelation(
-            attributeList,
-            context.Relation.Records
+        return new InheritRelation(
+            context.Relation,
+            attributes: attributeList
         );
     }
 }

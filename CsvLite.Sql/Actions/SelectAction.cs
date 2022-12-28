@@ -15,7 +15,7 @@ public class SelectAction : IRelationAction
         _relationNode = relationNode;
     }
 
-    public IRelationResult Execute(IPhysicalRelationProvider provider)
+    public IRelationResult Execute(IRelationProvider provider)
     {
         var evaluator = new RelationEvaluator(provider);
         var relation = evaluator.Evaluate(_relationNode);

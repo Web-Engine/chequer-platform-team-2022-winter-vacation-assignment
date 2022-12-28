@@ -10,17 +10,15 @@ public class ComplexRelation : IRelation
 {
     public IAttributeList Attributes { get; }
 
-    public IReadOnlyList<IRecord> Records { get; }
+    public IEnumerable<IRecord> Records { get; }
 
     public ComplexRelation(IRelation relation1, IRelation relation2)
     {
         Attributes = new ConcatAttributeList(relation1.Attributes, relation2.Attributes);
-        
-        Records = new List<IRecord>(
-            relation1.Records.SelectMany(
-                _ => relation2.Records,
-                (record1, record2) => new ConcatRecord(record1, record2)
-            )
+
+        Records = relation1.Records.SelectMany(
+            _ => relation2.Records,
+            (record1, record2) => new ConcatRecord(record1, record2)
         );
     }
 }

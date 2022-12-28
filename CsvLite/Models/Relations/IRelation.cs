@@ -7,5 +7,5 @@ public interface IRelation
 {
     IAttributeList Attributes { get; }
 
-    IReadOnlyList<IRecord> Records { get; }
+    IEnumerable<IRecord> Records { get; }
 }

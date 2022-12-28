@@ -1,5 +1,4 @@
 using CsvLite.Models.Attributes;
-using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 
@@ -9,7 +8,7 @@ public class EmptyRelation : IRelation
 {
     public IAttributeList Attributes { get; } = new EmptyAttributeList();
 
-    public IReadOnlyList<IRecord> Records { get; } = new Empty1RecordList();
+    public IEnumerable<IRecord> Records { get; } = new Empty1RecordList();
 
     private class EmptyAttributeList : List<IAttribute>, IAttributeList
     {

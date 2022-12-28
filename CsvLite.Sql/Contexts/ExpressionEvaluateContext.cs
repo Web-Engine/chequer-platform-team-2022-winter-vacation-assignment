@@ -24,7 +24,7 @@ public sealed class ExpressionEvaluateContext : IExpressionEvaluateContext
     {
         return new RelationEvaluator(
             new RelationEvaluateContext(
-                Parent.PhysicalRelationProvider,
+                Parent.RelationProvider,
                 Parent.Relation,
                 this
             )

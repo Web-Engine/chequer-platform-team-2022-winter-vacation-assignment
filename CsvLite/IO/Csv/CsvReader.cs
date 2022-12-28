@@ -21,7 +21,9 @@ public sealed class CsvReader : IRelationReader, IDisposable
         _reader = File.OpenText(_filePath);
     }
 
-    public IPhysicalRelation Read()
+    IRelation IRelationReader.Read() => Read();
+
+    public CsvRelation Read()
     {
         var relationIdentifier = new Identifier(_filePath);
         var attributeLine = _reader.ReadLine();

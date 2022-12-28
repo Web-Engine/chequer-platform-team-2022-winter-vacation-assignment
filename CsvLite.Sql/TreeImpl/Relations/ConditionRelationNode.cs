@@ -21,16 +21,17 @@ public class ConditionRelationNode : IInheritRelationNode
 
     public IRelation Evaluate(IRelationEvaluateContext context)
     {
-        return new DefaultRelation(
-            context.Relation.Attributes,
-            context.Relation.Records.Where(record =>
+        return new InheritRelation(
+            context.Relation,
+            
+            records: context.Relation.Records.Where(record =>
             {
                 var expressionContext = context.CreateExpressionEvaluateContext(record);
                 var evaluator = expressionContext.CreateExpressionEvaluator();
                 
                 var condition = evaluator.Evaluate(_conditionExpressionNode).AsBoolean();
                 return condition.Value;
-            }).ToList()
+            })
         );
     }
 }

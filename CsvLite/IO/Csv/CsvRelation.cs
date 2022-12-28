@@ -5,10 +5,11 @@ using CsvLite.Models.Records;
 
 namespace CsvLite.IO.Csv;
 
-public class CsvRelation : IPhysicalRelation
+public class CsvRelation : IWritableRelation
 {
     IAttributeList IRelation.Attributes => _attributes;
-    IReadOnlyList<IRecord> IRelation.Records => _records;
+    
+    IEnumerable<IRecord> IRelation.Records => _records;
 
     private readonly Identifier _identifier;
     private readonly DefaultAttributeList _attributes = new();
@@ -24,12 +25,6 @@ public class CsvRelation : IPhysicalRelation
     public void AddRecord(IRecord record)
     {
         _records.Add(record);
-        Save();
-    }
-
-    public void AddRecordRange(IEnumerable<IRecord> records)
-    {
-        _records.AddRange(records);
         Save();
     }
 

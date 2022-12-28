@@ -21,7 +21,7 @@ internal class OffsetRelationNode : IInheritRelationNode
     {
         return new InheritRelation(
             context.Relation,
-            context.Relation.Records.Skip(_offset).ToList()
+            records: context.Relation.Records.Skip(_offset)
         );
     }
 }

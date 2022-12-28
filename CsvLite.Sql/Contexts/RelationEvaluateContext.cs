@@ -6,27 +6,27 @@ namespace CsvLite.Sql.Contexts;
 
 public sealed class RelationEvaluateContext : IRelationEvaluateContext
 {
-    public IPhysicalRelationProvider PhysicalRelationProvider { get; }
+    public IRelationProvider RelationProvider { get; }
 
     public IRelation Relation { get; }
 
     public IExpressionEvaluateContext? Parent { get; }
 
-    public RelationEvaluateContext(IPhysicalRelationProvider physicalRelationProvider, IRelation relation) : this(physicalRelationProvider, relation,
+    public RelationEvaluateContext(IRelationProvider relationProvider, IRelation relation) : this(relationProvider, relation,
         null)
     {
     }
 
-    internal RelationEvaluateContext(IPhysicalRelationProvider physicalRelationProvider, IRelation relation, IExpressionEvaluateContext? parent)
+    internal RelationEvaluateContext(IRelationProvider relationProvider, IRelation relation, IExpressionEvaluateContext? parent)
     {
-        PhysicalRelationProvider = physicalRelationProvider;
+        RelationProvider = relationProvider;
         Relation = relation;
         Parent = parent;
     }
 
     public RelationEvaluateContext CreateSubContext(IRelation relation)
     {
-        return new RelationEvaluateContext(PhysicalRelationProvider, relation);
+        return new RelationEvaluateContext(RelationProvider, relation);
     }
 
     public IExpressionEvaluateContext CreateExpressionEvaluateContext(IRecord record)

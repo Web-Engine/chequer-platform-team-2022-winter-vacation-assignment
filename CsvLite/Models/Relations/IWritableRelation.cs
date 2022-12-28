@@ -2,7 +2,7 @@
 
 namespace CsvLite.Models.Relations;
 
-public interface IPhysicalRelation : IRelation
+public interface IWritableRelation : IRelation
 {
     public void AddRecord(IRecord record);
 }

@@ -6,10 +6,10 @@ namespace CsvLite.Sql.Actions;
 
 public interface IRelationAction: ISqlAction
 {
-    ISqlActionResult ISqlAction.Execute(IPhysicalRelationProvider schema)
+    ISqlActionResult ISqlAction.Execute(IRelationProvider schema)
     {
         return Execute(schema);
     }
 
-    new IRelationResult Execute(IPhysicalRelationProvider schema);
+    new IRelationResult Execute(IRelationProvider schema);
 }
