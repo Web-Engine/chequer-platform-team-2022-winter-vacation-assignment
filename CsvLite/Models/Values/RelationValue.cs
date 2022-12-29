@@ -11,13 +11,24 @@ public sealed class RelationValue : IValue
         Relation = relation;
     }
 
-    public int CompareTo(IValue? other)
+    public PrimitiveValue AsPrimitive()
     {
-        throw new InvalidOperationException("Cannot compare relation");
+        return AsTuple().AsPrimitive();
     }
 
-    public bool Equals(IValue? other)
+    public TupleValue AsTuple()
     {
-        throw new InvalidOperationException("Cannot compare relation");
+        if (Relation.Attributes.Count == 0)
+            return new TupleValue();
+
+        var records = Relation.Records.Take(2).ToList();
+
+        if (records.Count == 0)
+            return new TupleValue();
+
+        if (records.Count != 1)
+            throw new InvalidOperationException($"Cannot convert {GetType()} to TupleValue");
+
+        return new TupleValue(records[0]);
     }
 }

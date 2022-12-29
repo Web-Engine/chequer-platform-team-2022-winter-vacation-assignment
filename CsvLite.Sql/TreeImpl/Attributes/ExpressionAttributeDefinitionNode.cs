@@ -2,23 +2,31 @@ using CsvLite.Models.Attributes;
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Expressions;
+using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Attributes;
 
 public class ExpressionAttributeDefinitionNode : IAttributeDefinitionNode
 {
-    private readonly IExpressionNode _expressionNode;
+    public IEnumerable<INodeValue> Children
+    {
+        get { yield return ExpressionNode; }
+    }
+
+    public NodeValue<IExpressionNode> ExpressionNode { get; }
+    
     private readonly Identifier _name;
 
     public ExpressionAttributeDefinitionNode(Identifier name, IExpressionNode expressionNode)
     {
         _name = name;
-        _expressionNode = expressionNode;
+        ExpressionNode = expressionNode.ToNodeValue();
     }
 
-    public IEnumerable<IAttribute> EvaluateAttributes(IRelationEvaluateContext context)
+    public IEnumerable<IAttribute> EvaluateAttributes(IRelationContext context)
     {
         yield return new DefaultAttribute(
             Identifier.Empty,
@@ -26,9 +34,8 @@ public class ExpressionAttributeDefinitionNode : IAttributeDefinitionNode
         );
     }
 
-    public IEnumerable<IValue> EvaluateValues(IExpressionEvaluateContext context)
+    public IEnumerable<IValue> EvaluateValues(IRecordContext context)
     {
-        var evaluator = context.CreateExpressionEvaluator();
-        yield return evaluator.Evaluate(_expressionNode);
+        yield return ExpressionNode.Value.Evaluate(context);
     }
 }

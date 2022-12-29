@@ -50,7 +50,7 @@ clauseWhere
 ;
 
 clauseGroupBy
-    : GROUP BY referenceAttribute clauseHaving?
+    : GROUP BY referenceAttributeList clauseHaving?
 ;
 
 clauseHaving
@@ -74,10 +74,12 @@ clauseLimit
 //region INSERT
 statementInsert
     : INSERT INTO
-        relation
-        attributeList?
-        (VALUE | VALUES)
-        valueList (COMMA__ valueList)*
+        insertItem
+        insertValues
+;
+
+insertItem
+    : relation attributeList?
 ;
 
 attributeList
@@ -86,6 +88,11 @@ attributeList
 
 attributeItem
     : attributeIdentifier=identifier
+;
+
+insertValues
+    : statementSelect                                       #insertValues_select
+    | (VALUE | VALUES) valueList (COMMA__ valueList)*       #insertValues_values
 ;
 
 valueList
@@ -134,18 +141,22 @@ expressionLiteral
     | literalDouble                     #expressionLiteral_double
 ;
    
-expressionListInParenthesis
-    : expressionInParenthesis (COMMA__ expressionInParenthesis)* 
+expressionList
+    : expression (COMMA__ expression)*
 ;
 
 expressionFunctionCall
-    : identifier OPEN_PARENTHESIS__ expressionListInParenthesis CLOSE_PARENTHESIS__
+    : identifier OPEN_PARENTHESIS__ expressionList CLOSE_PARENTHESIS__
 ;
 //endregion Expressions
 
 //region Commons
 referenceRelation
     : relationIdentifier=identifier
+;
+
+referenceAttributeList
+    : referenceAttribute (COMMA__ referenceAttribute)*
 ;
 
 referenceAttribute
@@ -237,7 +248,7 @@ FALSE: 'FALSE';
 ASC: 'ASC';
 DESC: 'DESC';
 
-IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
+IDENTIFIER: [a-z_][a-z0-9_]*;
 
 DOUBLE_QUOTED_TEXT: '"' (~[\r\n"] | '\\"')* '"';
 SINGLE_QUOTED_TEXT: '\'' (~[\r\n'] | '\\\'')* '\'';

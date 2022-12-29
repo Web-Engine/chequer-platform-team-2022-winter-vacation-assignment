@@ -1,36 +1,88 @@
-﻿using CsvLite.IO.Csv;
+﻿using System.Collections.Immutable;
+using System.Globalization;
+using CsvHelper;
+using CsvLite.IO.Csv;
+using CsvLite.Sql.Engine;
 using CsvLite.Sql.Models.Results;
+using CsvLite.Sql.Optimizers;
 using CsvLite.Sql.Parsers;
 
 namespace CsvLite.Cli;
 
 public class Program
 {
+    // public static void Main(string[] args)
+    // {
+    //     using var streamReader = new StreamReader("datasets/freshman_kgs.csv");
+    //     using var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture);
+    //
+    //     csvReader.Read();
+    //     csvReader.ReadHeader();
+    //
+    //     var headerRecords = csvReader.HeaderRecord ?? ArraySegment<string>.Empty;
+    //     Console.WriteLine(string.Join(",", headerRecords));
+    //
+    //     while (csvReader.Read())
+    //     {
+    //         for (var i = 0; i < headerRecords.Count; i++)
+    //         {
+    //             Console.Write(csvReader.GetField(i));
+    //             Console.Write(",\t");
+    //         }
+    //
+    //         Console.WriteLine();
+    //     }
+    //
+    //     Console.WriteLine();
+    // }
+    
     public static void Main(string[] args)
     {
         var relationPresenter = new RelationPresenter(Console.Out);
         var parser = new SqlParser();
-        
-        
+
         const string sql = @"
-            SELECT
-                *
-            FROM
-                ""datasets/freshman_kgs.csv"" as kgs,
-                (SELECT * FROM ""datasets/freshman_lbs.csv"" WHERE Sex = 'F' LIMIT 10) as lbs
-            WHERE
-                kgs.Sex = 'M'
-            LIMIT 100
+SELECT COUNT(*), Sex FROM ""datasets/freshman_lbs.csv"" as kgs GROUP BY ""Sex""
 ";
 
+//         const string sql = @"
+//             SELECT
+//                 *
+//             FROM
+//                 ""datasets/freshman_kgs.csv"" as kgs,
+//                 ""datasets/freshman_lbs.csv"" as lbs
+//             WHERE
+//                 (
+//                     SELECT
+//                          *
+//                      FROM
+//                         ""datasets/freshman_kgs.csv"" d1,
+//                         ""datasets/freshman_kgs.csv"" d2
+//                 ) OR TRUE
+//             LIMIT 100
+// ";
+
+        var provider = new CsvRelationProvider();
+        var engine = new SqlEngine(provider);
+
+        var optimizer = new RuleBasedOptimizer();
+
         var action = parser.Parse(sql);
-        var result = action.Execute(new CsvRelationProvider());
+        action = optimizer.Optimize(action);
+        
+        var result = engine.Execute(action);
 
-        if (result is not IRelationResult relationResult)
-            throw new Exception("Wrong!");
+        if (result is IRelationResult {Relation: var relation})
+        {
+            relationPresenter.Show(relation);
+        }
 
-        relationPresenter.Show(relationResult.Relation);
+        if (result is IAppendRecordResult { Count: var count})
+        {
+            Console.WriteLine($"{count} Records Inserted");
+        }
 
+        Console.WriteLine($"Time elapsed: {result.Elapsed}");
         // relationPresenter.Show(relation);
 
         // using var writer = new CsvWriter("copied.csv");

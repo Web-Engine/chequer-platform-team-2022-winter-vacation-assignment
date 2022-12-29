@@ -1,28 +1,13 @@
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
+using CsvLite.Sql.Models.Attributes;
 
 namespace CsvLite.Sql.Models.Relations;
 
 public class EmptyRelation : IRelation
 {
-    public IAttributeList Attributes { get; } = new EmptyAttributeList();
+    public IAttributeList Attributes { get; } = new DefaultAttributeList();
 
-    public IEnumerable<IRecord> Records { get; } = new Empty1RecordList();
-
-    private class EmptyAttributeList : List<IAttribute>, IAttributeList
-    {
-        public IEnumerable<(IAttribute Attribute, int Index)> FindAttributes(IAttributeReference reference)
-        {
-            throw new InvalidOperationException($"Cannot find attribute with identifier {reference}");
-        }
-    }
-
-    private class Empty1RecordList : List<IRecord>
-    {
-        public Empty1RecordList()
-        {
-            Add(new DefaultRecord());
-        }
-    }
+    public IEnumerable<IRecord> Records { get; } = new List<IRecord>();
 }

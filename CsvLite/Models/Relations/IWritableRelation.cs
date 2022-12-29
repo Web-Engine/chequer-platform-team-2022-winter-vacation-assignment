@@ -4,5 +4,5 @@ namespace CsvLite.Models.Relations;
 
 public interface IWritableRelation : IRelation
 {
-    public void AddRecord(IRecord record);
+    public void AddRecords(IEnumerable<IRecord> records);
 }

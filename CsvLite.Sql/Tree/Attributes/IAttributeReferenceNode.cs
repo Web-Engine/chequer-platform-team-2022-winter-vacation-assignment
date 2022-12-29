@@ -5,5 +5,5 @@ namespace CsvLite.Sql.Tree.Attributes;
 
 public interface IAttributeReferenceNode
 {
-    IEnumerable<IAttribute> Evaluate(IRelationEvaluateContext context);
+    IEnumerable<IAttribute> Evaluate(IRelationContext context);
 }

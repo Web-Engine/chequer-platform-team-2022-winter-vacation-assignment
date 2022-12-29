@@ -2,7 +2,7 @@
 
 namespace CsvLite.Sql.Models.Results;
 
-public interface IRelationResult : ISqlActionResult
+public interface IRelationResult : IExecuteResult
 {
     IRelation Relation { get; }
 }

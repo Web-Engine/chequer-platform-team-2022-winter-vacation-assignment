@@ -5,23 +5,21 @@ using CsvLite.Sql.Tree.Relations;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-internal class OffsetRelationNode : IInheritRelationNode
+internal class OffsetRelationNode : BaseInheritRelationNode
 {
-    public IRelationNode? BaseRelationNode { get; }
-    
     private readonly int _offset;
 
-    public OffsetRelationNode(IRelationNode? baseRelationNode, int offset)
+    public OffsetRelationNode(IRelationNode relationNode, int offset) : base(relationNode)
     {
-        BaseRelationNode = baseRelationNode;
         _offset = offset;
     }
 
-    public IRelation Evaluate(IRelationEvaluateContext context)
+    protected override IRelation Evaluate(IRelationContext context)
     {
         return new InheritRelation(
-            context.Relation,
-            records: context.Relation.Records.Skip(_offset)
+            context,
+            
+            records: context.Records.Skip(_offset)
         );
     }
 }

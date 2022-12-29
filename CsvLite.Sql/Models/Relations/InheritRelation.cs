@@ -1,23 +1,54 @@
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
+using CsvLite.Sql.Contexts;
 
 namespace CsvLite.Sql.Models.Relations;
 
 public class InheritRelation : IRelation
 {
-    public IAttributeList Attributes => _attributes ?? _relation.Attributes;
+    public IAttributeList Attributes { get; }
 
-    public IEnumerable<IRecord> Records => _records ?? _relation.Records;
+    public IEnumerable<IRecord> Records { get; }
 
-    private readonly IRelation _relation;
-    private readonly IAttributeList? _attributes;
-    private readonly IEnumerable<IRecord>? _records;
+    public InheritRelation(IRelationContext context, IAttributeList? attributes = null,
+        IEnumerable<IRecord>? records = null)
+        : this(context.Relation, attributes, records)
+    {
+    }
 
     public InheritRelation(IRelation relation, IAttributeList? attributes = null, IEnumerable<IRecord>? records = null)
     {
-        _relation = relation;
-        _attributes = attributes;
-        _records = records;
+        Attributes = attributes ?? relation.Attributes;
+        Records = records ?? relation.Records;
+    }
+
+    public InheritRelation(
+        IRelationContext context,
+        Func<IAttribute, bool>? attributeFilter = null,
+        Func<IAttribute, IAttribute>? attributeTransformer = null,
+        Func<IRecord, bool>? recordFilter = null,
+        Func<IRecord, IRecord>? recordTransformer = null
+    ) : this(context.Relation, attributeFilter, attributeTransformer, recordFilter, recordTransformer)
+    {
+    }
+
+    public InheritRelation(
+        IRelation relation,
+        Func<IAttribute, bool>? attributeFilter = null,
+        Func<IAttribute, IAttribute>? attributeTransformer = null,
+        Func<IRecord, bool>? recordFilter = null,
+        Func<IRecord, IRecord>? recordTransformer = null
+    )
+    {
+        Attributes = new DefaultAttributeList(
+            relation.Attributes
+                .Where(attribute => attributeFilter?.Invoke(attribute) ?? true)
+                .Select(attribute => attributeTransformer?.Invoke(attribute) ?? attribute)
+        );
+
+        Records = relation.Records
+            .Where(record => recordFilter?.Invoke(record) ?? true)
+            .Select(record => recordTransformer?.Invoke(record) ?? record);
     }
 }

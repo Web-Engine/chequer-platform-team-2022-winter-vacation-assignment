@@ -1,37 +1,48 @@
-﻿using CsvLite.IO.Csv;
-using CsvLite.Models.Relations;
+﻿using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Models.Relations;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Tree.Relations;
 using CsvLite.Sql.Utilities;
+using CsvLite.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-public class ConditionRelationNode : IInheritRelationNode
+public class ConditionRelationNode : BaseInheritRelationNode
 {
-    public IRelationNode? BaseRelationNode { get; }
-    private readonly IExpressionNode _conditionExpressionNode;
-
-    public ConditionRelationNode(IRelationNode? baseRelationNode, IExpressionNode conditionExpressionNode)
+    public override IEnumerable<INodeValue> Children
     {
-        BaseRelationNode = baseRelationNode;
-        _conditionExpressionNode = conditionExpressionNode;
+        get
+        {
+            foreach (var node in base.Children)
+            {
+                yield return node;
+            }
+
+            yield return ExpressionNode;
+        }
     }
 
-    public IRelation Evaluate(IRelationEvaluateContext context)
+    public NodeValue<IExpressionNode> ExpressionNode { get; set; }
+
+    public ConditionRelationNode(IRelationNode relationNode, IExpressionNode expressionNode) : base(relationNode)
+    {
+        ExpressionNode = expressionNode.ToNodeValue();
+    }
+
+    protected override IRelation Evaluate(IRelationContext context)
     {
         return new InheritRelation(
-            context.Relation,
+            context,
             
-            records: context.Relation.Records.Where(record =>
+            recordFilter: record =>
             {
-                var expressionContext = context.CreateExpressionEvaluateContext(record);
-                var evaluator = expressionContext.CreateExpressionEvaluator();
-                
-                var condition = evaluator.Evaluate(_conditionExpressionNode).AsBoolean();
+                var recordContext = context.CreateRecordContext(record);
+
+                var condition = ExpressionNode.Evaluate(recordContext).AsBoolean();
                 return condition.Value;
-            })
+            }
         );
     }
 }

@@ -1,14 +1,25 @@
 ﻿using CsvLite.Models.Values;
+using CsvLite.Models.Values.Primitives;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Expressions;
 
-public class BinaryCalculateExpressionNode : IEvaluateExpressionNode
+public class BinaryCalculateExpressionNode : IPrimitiveExpressionNode
 {
-    private readonly IExpressionNode _expression1;
-    private readonly IExpressionNode _expression2;
+    public IEnumerable<INodeValue> Children
+    {
+        get
+        {
+            yield return ExpressionNode1;
+            yield return ExpressionNode2;
+        }
+    }
+
+    public NodeValue<IExpressionNode> ExpressionNode1 { get; }
+    public NodeValue<IExpressionNode> ExpressionNode2 { get; }
 
     private readonly BinaryCalculateOperator _operator;
 
@@ -22,34 +33,37 @@ public class BinaryCalculateExpressionNode : IEvaluateExpressionNode
     }
 
     public BinaryCalculateExpressionNode(
-        IExpressionNode expression1,
+        IExpressionNode expressionNode1,
         BinaryCalculateOperator @operator,
-        IExpressionNode expression2
+        IExpressionNode expressionNode2
     )
     {
-        _expression1 = expression1;
+        ExpressionNode1 = expressionNode1.ToNodeValue();
         _operator = @operator;
-        _expression2 = expression2;
+        ExpressionNode2 = expressionNode2.ToNodeValue();
     }
 
-    public IValue Evaluate(IExpressionEvaluateContext context)
+    public PrimitiveValue Evaluate(IRecordContext context)
     {
-        var evaluator = context.CreateExpressionEvaluator();
-        
-        var value1 = evaluator.Evaluate(_expression1);
-        var value2 = evaluator.Evaluate(_expression2);
+        var value1 = ExpressionNode1.Evaluate(context).AsPrimitive();
+        var value2 = ExpressionNode2.Evaluate(context).AsPrimitive();
 
+        return Evaluate(value1, value2);
+    }
+
+    public PrimitiveValue Evaluate(PrimitiveValue value1, PrimitiveValue value2)
+    {
         return (value1, value2) switch
         {
             (NullValue, _) => throw new InvalidOperationException("Cannot calculate with DbNull"),
             (_, NullValue) => throw new InvalidOperationException("Cannot calculate with DbNull"),
-            
-            (IntegerValue int1, IntegerValue int2) => EvaluateInteger(int1, int2),
 
-            (StringValue str1, StringValue str2) => EvaluateString(str1, str2),
-            (StringValue str1, _) => EvaluateString(str1, value2.AsString()),
-            (_, StringValue str2) => EvaluateString(value1.AsString(), str2),
-            
+            (IntegerValue integerValue1, IntegerValue integerValue2) => EvaluateInteger(integerValue1, integerValue2),
+
+            (StringValue stringValue1, StringValue stringValue2) => EvaluateString(stringValue1, stringValue2),
+            (StringValue stringValue1, _) => EvaluateString(stringValue1, value2.AsString()),
+            (_, StringValue stringValue2) => EvaluateString(value1.AsString(), stringValue2),
+
             (_, _) => throw new InvalidOperationException("Cannot calculate")
         };
     }

@@ -1,30 +1,43 @@
 using CsvLite.Models.Values;
+using CsvLite.Models.Values.Primitives;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
+using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Expressions.Functions;
 
-public class CountExpressionNode : IEvaluateExpressionNode
+public class CountExpressionNode : IExpressionNode, IImplicitAggregateNode
 {
-    private readonly IExpressionNode _expressionNode;
+    public IEnumerable<INodeValue> Children
+    {
+        get { yield return ExpressionNode; }
+    }
+
+    public NodeValue<IExpressionNode> ExpressionNode { get; }
+
     private readonly bool _distinct;
 
     public CountExpressionNode(IExpressionNode expressionNode, bool distinct)
     {
-        _expressionNode = expressionNode;
+        ExpressionNode = expressionNode.ToNodeValue();
         _distinct = distinct;
     }
 
-    public IValue Evaluate(IExpressionEvaluateContext context)
+    public IValue Evaluate(IRecordContext context)
     {
-        var evaluator = context.CreateExpressionEvaluator();
-        var value = evaluator.Evaluate(_expressionNode);
+        var value = ExpressionNode.Evaluate(context);
 
-        if (value is not IEnumerable<IValue> values)
+        if (value is TupleValue tupleValue)
+            value = tupleValue.First();
+
+        if (value is not AggregateValue aggregateValue)
             return new IntegerValue(1);
 
-        if (!_distinct)
-            values = values.Distinct();
+        IEnumerable<IValue> values = aggregateValue;
+
+        if (_distinct)
+            values = aggregateValue.Distinct();
 
         var count = values.Count();
 

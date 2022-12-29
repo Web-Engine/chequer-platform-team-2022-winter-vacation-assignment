@@ -1,27 +1,33 @@
 using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
+using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Expressions.Functions;
 
-public class MaxExpressionNode : IEvaluateExpressionNode
+public class MaxExpressionNode : IExpressionNode
 {
-    private readonly IExpressionNode _expressionNode;
+    public IEnumerable<INodeValue> Children
+    {
+        get { yield return ExpressionNode; }
+    }
+
+    public NodeValue<IExpressionNode> ExpressionNode { get; }
 
     public MaxExpressionNode(IExpressionNode expressionNode)
     {
-        _expressionNode = expressionNode;
+        ExpressionNode = expressionNode.ToNodeValue();
     }
 
-    public IValue Evaluate(IExpressionEvaluateContext context)
+    public IValue Evaluate(IRecordContext context)
     {
-        var evaluator = context.CreateExpressionEvaluator();
-        var value = evaluator.Evaluate(_expressionNode);
+        var value = ExpressionNode.Evaluate(context);
 
-        if (value is not IEnumerable<IValue> values)
+        if (value is not AggregateValue aggregateValue)
             return value;
 
-        var max = values.Max();
+        var max = aggregateValue.Max();
         if (max is null)
             throw new InvalidOperationException();
 

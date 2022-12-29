@@ -1,39 +1,42 @@
 using CsvLite.Models.Attributes;
-using CsvLite.Models.Identifiers;
 using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Models.Attributes;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Expressions;
-using CsvLite.Sql.Tree.Relations;
+using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Attributes;
 
 public class AllAttributeDefinitionNode : IAttributeDefinitionNode
 {
-    private readonly IAllAttributeReferenceExpressionNode _expressionNode;
+    public IEnumerable<INodeValue> Children
+    {
+        get { yield return ExpressionNode; }
+    }
+
+    public NodeValue<IAllAttributeReferenceExpressionNode> ExpressionNode { get; }
 
     public AllAttributeDefinitionNode(IAllAttributeReferenceExpressionNode expressionNode)
     {
-        _expressionNode = expressionNode;
+        ExpressionNode = expressionNode.ToNodeValue();
     }
 
-    public IEnumerable<IAttribute> EvaluateAttributes(IRelationEvaluateContext context)
+    public IEnumerable<IAttribute> EvaluateAttributes(IRelationContext context)
     {
         var indexedAttributes = context.Relation.Attributes
-            .FindAttributes(_expressionNode.AttributeReference);
+            .FindAttributes(ExpressionNode.Value.AttributeReference);
 
         return indexedAttributes.Select(x => x.Attribute);
     }
 
-    public IEnumerable<IValue> EvaluateValues(IExpressionEvaluateContext context)
+    public IEnumerable<IValue> EvaluateValues(IRecordContext context)
     {
-        var evaluator = context.CreateExpressionEvaluator();
-        var value = evaluator.Evaluate(_expressionNode);
+        var value = ExpressionNode.Value.Evaluate(context);
 
         if (value is not TupleValue tuple)
             throw new InvalidOperationException("DB ERROR Occurred");
-        
-        return tuple.Values;
+
+        return tuple;
     }
 }

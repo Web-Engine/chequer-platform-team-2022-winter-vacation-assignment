@@ -1,42 +1,63 @@
 ﻿using CsvLite.Models.Values;
+using CsvLite.Models.Values.Primitives;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Utilities;
+using CsvLite.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Expressions;
 
-public class BinaryBooleanAlgebraExpressionNode : IEvaluateExpressionNode
+public class BinaryBooleanAlgebraExpressionNode : IPrimitiveExpressionNode
 {
-    private readonly IExpressionNode _expression1;
-    private readonly IExpressionNode _expression2;
+    public IEnumerable<INodeValue> Children
+    {
+        get
+        {
+            yield return ExpressionNode1;
+            yield return ExpressionNode2;
+        }
+    }
 
-    private readonly BinaryBooleanAlgebraOperator _operator;
-    
+    public NodeValue<IExpressionNode> ExpressionNode1 { get; }
+    public NodeValue<IExpressionNode> ExpressionNode2 { get; }
+
+    public BinaryBooleanAlgebraOperator Operator { get; }
+
     public enum BinaryBooleanAlgebraOperator
     {
         And,
         Or
     }
 
-    public BinaryBooleanAlgebraExpressionNode(IExpressionNode expression1, BinaryBooleanAlgebraOperator @operator, IExpressionNode expression2)
+    public BinaryBooleanAlgebraExpressionNode(IExpressionNode expressionNode1, BinaryBooleanAlgebraOperator @operator,
+        IExpressionNode expressionNode2)
     {
-        _expression1 = expression1;
-        _operator = @operator;
-        _expression2 = expression2;
+        ExpressionNode1 = expressionNode1.ToNodeValue();
+        Operator = @operator;
+        ExpressionNode2 = expressionNode2.ToNodeValue();
     }
 
-    public IValue Evaluate(IExpressionEvaluateContext context)
-    {
-        var evaluator = context.CreateExpressionEvaluator();
-        
-        var boolean1 = evaluator.Evaluate(_expression1).AsBoolean();
-        var boolean2 = evaluator.Evaluate(_expression2).AsBoolean();
+    PrimitiveValue IPrimitiveExpressionNode.Evaluate(IRecordContext context) => Evaluate(context);
 
-        return _operator switch
+    public BooleanValue Evaluate(IRecordContext context)
+    {
+        var value1 = ExpressionNode1.Evaluate(context);
+        var value2 = ExpressionNode2.Evaluate(context);
+
+        return Evaluate(value1, value2);
+    }
+
+    public BooleanValue Evaluate(IValue value1, IValue value2)
+    {
+        var boolean1 = value1.AsBoolean();
+        var boolean2 = value2.AsBoolean();
+
+        return Operator switch
         {
             BinaryBooleanAlgebraOperator.And => new BooleanValue(boolean1.Value && boolean2.Value),
             BinaryBooleanAlgebraOperator.Or => new BooleanValue(boolean1.Value || boolean2.Value),
-            
+
             _ => throw new InvalidOperationException("Invalid operator")
         };
     }

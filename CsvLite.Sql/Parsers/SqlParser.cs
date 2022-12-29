@@ -1,27 +1,28 @@
 using Antlr4.Runtime;
-using CsvLite.Sql.Actions;
 using CsvLite.Sql.Parsers.Antlr;
 using CsvLite.Sql.Parsers.Visitors;
+using CsvLite.Sql.Tree;
+using CsvLite.Sql.Tree.Actions;
 
 namespace CsvLite.Sql.Parsers;
 
 public class SqlParser
 {
-    public ISqlAction Parse(string sql)
+    public IActionNode Parse(string sql)
     {
         var antlrInputStream = new AntlrInputStream(sql);
 
         return ParseInternal(antlrInputStream);
     }
     
-    public ISqlAction Parse(Stream stream)
+    public IActionNode Parse(Stream stream)
     {
         var antlrInputStream = new AntlrInputStream(stream);
         
         return ParseInternal(antlrInputStream);
     }
 
-    private ISqlAction ParseInternal(AntlrInputStream stream)
+    private IActionNode ParseInternal(AntlrInputStream stream)
     {
         var lexer = new AntlrSqlLexer(stream);
         var tokens = new CommonTokenStream(lexer);

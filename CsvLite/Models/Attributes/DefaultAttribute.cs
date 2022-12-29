@@ -4,6 +4,8 @@ namespace CsvLite.Models.Attributes;
 
 public class DefaultAttribute : IAttribute
 {
+    public static readonly DefaultAttribute Empty = new(Identifier.Empty, Identifier.Empty);
+
     public QualifiedIdentifier Alias { get; }
 
     public Identifier Name { get; }

@@ -1,5 +1,9 @@
-﻿namespace CsvLite.Sql.Tree.Expressions;
+﻿using CsvLite.Models.Values;
+using CsvLite.Sql.Contexts;
 
-public interface IExpressionNode
+namespace CsvLite.Sql.Tree.Expressions;
+
+public interface IExpressionNode : INode
 {
+    IValue Evaluate(IRecordContext context);
 }

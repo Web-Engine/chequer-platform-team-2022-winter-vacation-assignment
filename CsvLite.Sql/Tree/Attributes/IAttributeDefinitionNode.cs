@@ -4,9 +4,9 @@ using CsvLite.Sql.Contexts;
 
 namespace CsvLite.Sql.Tree.Attributes;
 
-public interface IAttributeDefinitionNode
+public interface IAttributeDefinitionNode : INode
 {
-    IEnumerable<IAttribute> EvaluateAttributes(IRelationEvaluateContext context);
+    IEnumerable<IAttribute> EvaluateAttributes(IRelationContext context);
 
-    IEnumerable<IValue> EvaluateValues(IExpressionEvaluateContext context);
+    IEnumerable<IValue> EvaluateValues(IRecordContext context);
 }

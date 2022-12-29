@@ -6,30 +6,24 @@ using CsvLite.Sql.Tree.Relations;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-public class ConcatRelationNode : IBinaryRelationNode
+public class ConcatRelationNode : BaseBinaryRelationNode
 {
-    public IRelationNode BaseRelationNode1 { get; }
-    public IRelationNode BaseRelationNode2 { get; }
-
-    public ConcatRelationNode(IRelationNode baseRelationNode1, IRelationNode baseRelationNode2)
+    public ConcatRelationNode(IRelationNode relationNode1, IRelationNode relationNode2) : base(relationNode1,
+        relationNode2)
     {
-        BaseRelationNode1 = baseRelationNode1;
-        BaseRelationNode2 = baseRelationNode2;
     }
 
-    public IRelation Combine(IRelation baseRelation1, IRelation baseRelation2)
+    protected override IRelation Evaluate(IRelationContext context1, IRelationContext context2)
     {
-        if (baseRelation1.Attributes.Count != baseRelation2.Attributes.Count)
+        var relation1 = context1.Relation;
+        var relation2 = context2.Relation;
+
+        if (relation1.Attributes.Count != relation2.Attributes.Count)
             throw new Exception("Cannot concat(union) difference attribute size relations");
 
-        return new DefaultRelation(
-            baseRelation1.Attributes,
-            baseRelation1.Records.Concat(baseRelation2.Records).ToList()
+        return new InheritRelation(
+            relation1,
+            records: relation1.Records.Concat(relation2.Records)
         );
-    }
-
-    public IRelation Evaluate(IRelationEvaluateContext context)
-    {
-        return context.Relation;
     }
 }

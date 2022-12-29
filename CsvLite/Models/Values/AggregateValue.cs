@@ -2,19 +2,31 @@ using System.Collections;
 
 namespace CsvLite.Models.Values;
 
-public sealed class AggregateValue : IValue, IReadOnlyList<IValue>
+public sealed class AggregateValue : IEnumerable<IValue>, IValue
 {
-    public int Count => Values.Count;
+    public IEnumerable<IValue> Values { get; }
 
-    public IValue this[int index] => Values[index];
+    private readonly bool _canBePrimitive;
 
-    public IReadOnlyList<IValue> Values { get; }
-
-    public AggregateValue(IReadOnlyList<IValue> values)
+    public AggregateValue(IEnumerable<IValue> values, bool canBePrimitive)
     {
         Values = values;
+        _canBePrimitive = canBePrimitive;
     }
 
+    public PrimitiveValue AsPrimitive()
+    {
+        if (!_canBePrimitive)
+            throw new InvalidOperationException($"Cannot convert {GetType()} to PrimitiveValue");
+
+        return Values.First().AsPrimitive();
+    }
+
+    public TupleValue AsTuple()
+    {
+        return AsPrimitive().AsTuple();
+    }
+    
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
@@ -23,18 +35,5 @@ public sealed class AggregateValue : IValue, IReadOnlyList<IValue>
     public IEnumerator<IValue> GetEnumerator()
     {
         return Values.GetEnumerator();
-    }
-
-    public int CompareTo(IValue? other)
-    {
-        throw new InvalidOperationException("Cannot compare");
-    }
-
-    public bool Equals(IValue? other)
-    {
-        if (other is not ListValue dbList)
-            throw new InvalidOperationException("Cannot compare");
-
-        return this.SequenceEqual(dbList);
     }
 }

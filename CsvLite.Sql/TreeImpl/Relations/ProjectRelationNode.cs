@@ -5,44 +5,62 @@ using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Models.Relations;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Relations;
+using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-public class ProjectRelationNode : IInheritRelationNode
+public class ProjectRelationNode : BaseInheritRelationNode
 {
-    private readonly IReadOnlyList<IAttributeDefinitionNode> _attributeDefinitions;
-
-    public IRelationNode? BaseRelationNode { get; }
-
-    public ProjectRelationNode(
-        IRelationNode? baseRelationNode,
-        IReadOnlyList<IAttributeDefinitionNode> attributeDefinitions
-    )
+    public override IEnumerable<INodeValue> Children
     {
-        _attributeDefinitions = attributeDefinitions;
-        BaseRelationNode = baseRelationNode;
+        get
+        {
+            foreach (var node in base.Children)
+            {
+                yield return node;
+            }
+
+            foreach (var node in _attributeDefinitions)
+            {
+                yield return node;
+            }
+        }
     }
 
-    public IRelation Evaluate(IRelationEvaluateContext context)
+    private readonly List<NodeValue<IAttributeDefinitionNode>> _attributeDefinitions;
+
+    public ProjectRelationNode(
+        IRelationNode relationNode,
+        IReadOnlyList<IAttributeDefinitionNode> attributeDefinitions
+    ) : base(relationNode)
+    {
+        _attributeDefinitions = attributeDefinitions
+            .Select(node => node.ToNodeValue())
+            .ToList();
+    }
+
+    protected override IRelation Evaluate(IRelationContext context)
     {
         var newAttributes = _attributeDefinitions
-            .SelectMany(definitionNode => definitionNode.EvaluateAttributes(context));
+            .SelectMany(definitionNode => definitionNode.Value.EvaluateAttributes(context));
+
+        var attributes = new DefaultAttributeList(newAttributes);
 
         var newRecords = context.Relation.Records
             .Select(record =>
             {
-                var expressionContext = context.CreateExpressionEvaluateContext(record);
-                var values = _attributeDefinitions.SelectMany(definitionNode => definitionNode.EvaluateValues(expressionContext));
+                var recordContext = context.CreateRecordContext(record);
 
-                var newRecord = new DefaultRecord(values);
+                var values = _attributeDefinitions.SelectMany(definitionNode =>
+                    definitionNode.Value.EvaluateValues(recordContext)
+                );
 
-                return newRecord;
-            })
-            .ToList();
+                return new DefaultRecord(values);
+            });
 
-        var attributes = new DefaultAttributeList(newAttributes);
 
         return new DefaultRelation(
             attributes,

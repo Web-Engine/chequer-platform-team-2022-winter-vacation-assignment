@@ -5,23 +5,21 @@ using CsvLite.Sql.Tree.Relations;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-internal class LimitRelationNode : IInheritRelationNode
+internal class LimitRelationNode : BaseInheritRelationNode
 {
-    public IRelationNode? BaseRelationNode { get; }
-
     private readonly int _limit;
 
-    public LimitRelationNode(IRelationNode? baseRelationNode, int limit)
+    public LimitRelationNode(IRelationNode relationNode, int limit) : base(relationNode)
     {
-        BaseRelationNode = baseRelationNode;
         _limit = limit;
     }
-
-    public IRelation Evaluate(IRelationEvaluateContext context)
+    
+    protected override IRelation Evaluate(IRelationContext context)
     {
         return new InheritRelation(
-            context.Relation,
-            records: context.Relation.Records.Take(_limit)
+            context,
+            
+            records: context.Records.Take(_limit)
         );
     }
 }

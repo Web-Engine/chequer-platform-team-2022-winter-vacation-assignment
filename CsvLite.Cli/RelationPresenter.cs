@@ -1,5 +1,6 @@
 ﻿using CsvLite.Models.Relations;
 using CsvLite.Sql.Utilities;
+using CsvLite.Utilities;
 
 namespace CsvLite.Cli;
 

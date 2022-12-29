@@ -1,9 +1,12 @@
 using CsvLite.Models.Identifiers;
+using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
+using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Tree.Relations;
 using CsvLite.Sql.TreeImpl.Attributes;
 using CsvLite.Sql.TreeImpl.Expressions;
 using CsvLite.Sql.TreeImpl.Relations;
+using CsvLite.Sql.Utilities;
 using static CsvLite.Sql.Parsers.Antlr.AntlrSqlParser;
 
 namespace CsvLite.Sql.Parsers.Visitors;
@@ -12,18 +15,32 @@ public static class RelationVisitor
 {
     public static IRelationNode VisitStatementSelect(StatementSelectContext context)
     {
-        var attributeDefinitionNodes = VisitSelectItemList(context.selectItemList());
+        var attributeDefinitionNodes = VisitSelectItemList(context.selectItemList()).ToList();
 
-        IRelationNode? relationNode = null;
-        
+        IRelationNode relationNode;
+
         if (context.clauseFrom() is { } clauseFrom)
             relationNode = VisitClauseFrom(context.clauseFrom());
+        else
+            relationNode = new EmptyRowRelationNode();
 
         if (context.clauseWhere() is { } clauseWhereContext)
             relationNode = VisitClauseWhere(relationNode, clauseWhereContext);
 
         if (context.clauseGroupBy() is { } clauseGroupBy)
-            throw new NotSupportedException("GROUP BY clause not supported yet");
+            relationNode = VisitClauseGroupBy(relationNode, clauseGroupBy);
+        else
+        {
+            var isImplicitAggregate = attributeDefinitionNodes.Any(definitionNode =>
+                definitionNode.ContainsRecursive(
+                    node => node is IImplicitAggregateNode,
+                    node => node is IExpressionNode
+                )
+            );
+
+            if (isImplicitAggregate)
+                relationNode = new AggregateRelationNode(relationNode);
+        }
 
         if (context.clauseOrderBy() is { } clauseOrderByContext)
             throw new NotSupportedException("ORDER BY clause not supported yet");
@@ -33,7 +50,7 @@ public static class RelationVisitor
 
         return new ProjectRelationNode(
             relationNode,
-            attributeDefinitionNodes.ToList()
+            attributeDefinitionNodes
         );
     }
 
@@ -131,7 +148,17 @@ public static class RelationVisitor
         );
     }
 
-    public static IRelationNode VisitClauseWhere(IRelationNode? baseRelationNode, ClauseWhereContext context)
+    public static IRelationNode VisitClauseGroupBy(IRelationNode relationNode, ClauseGroupByContext context)
+    {
+        var references = ExpressionVisitor.VisitReferenceAttributeList(context.referenceAttributeList());
+
+        return new AggregateRelationNode(
+            relationNode,
+            references
+        );
+    }
+
+    public static IRelationNode VisitClauseWhere(IRelationNode baseRelationNode, ClauseWhereContext context)
     {
         var conditionExpressionNode = ExpressionVisitor.VisitExpression(context.expression());
 
@@ -141,7 +168,7 @@ public static class RelationVisitor
         );
     }
 
-    public static IRelationNode VisitClauseLimit(IRelationNode? baseRelationNode, ClauseLimitContext context)
+    public static IRelationNode VisitClauseLimit(IRelationNode baseRelationNode, ClauseLimitContext context)
     {
         if (context.offset is { } contextOffset)
             baseRelationNode = new OffsetRelationNode(baseRelationNode, contextOffset.GetInteger());
@@ -150,5 +177,60 @@ public static class RelationVisitor
             baseRelationNode,
             context.count.GetInteger()
         );
+    }
+
+    public static IRelationNode VisitInsertItem(InsertItemContext context)
+    {
+        var relationNode = VisitRelation(context.relation());
+
+        if (context.attributeList() is not { } attributeListContext)
+            return relationNode;
+
+        var attributes = VisitAttributeList(attributeListContext);
+
+        return new SubsetRelationNode(
+            relationNode,
+            attributes
+        );
+    }
+
+    public static IEnumerable<Identifier> VisitAttributeList(AttributeListContext context)
+    {
+        foreach (var attributeItemContext in context.attributeItem())
+        {
+            yield return VisitAttributeItem(attributeItemContext);
+        }
+    }
+
+    public static Identifier VisitAttributeItem(AttributeItemContext context)
+    {
+        return context.identifier().ToIdentifier();
+    }
+
+    public static IRelationNode VisitInsertValues(InsertValuesContext context)
+    {
+        switch (context)
+        {
+            case InsertValues_selectContext select:
+                return VisitInsertValues_select(select);
+
+            case InsertValues_valuesContext values:
+                return InsertValues_values(values);
+
+            default:
+                throw new InvalidOperationException($"Unknown InsertValuesContext {context.GetType()}");
+        }
+    }
+
+    private static IRelationNode VisitInsertValues_select(InsertValues_selectContext context)
+    {
+        return VisitStatementSelect(context.statementSelect());
+    }
+
+    private static ValuesRelationNode InsertValues_values(InsertValues_valuesContext context)
+    {
+        var expressionNodes = context.valueList().Select(ExpressionVisitor.VisitValueList);
+
+        return new ValuesRelationNode(expressionNodes);
     }
 }

@@ -3,6 +3,7 @@ using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Parsers.Antlr;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.TreeImpl.Expressions;
+using CsvLite.Sql.TreeImpl.Expressions.Functions;
 using static CsvLite.Sql.Parsers.Antlr.AntlrSqlParser;
 using static CsvLite.Sql.TreeImpl.Expressions.BinaryBooleanAlgebraExpressionNode;
 using static CsvLite.Sql.TreeImpl.Expressions.BinaryCalculateExpressionNode;
@@ -92,6 +93,12 @@ public static class ExpressionVisitor
     private static IExpressionNode VisitExpression_value(Expression_valueContext context)
     {
         return VisitExpressionValue(context.expressionValue());
+    }
+
+    public static IEnumerable<ExplicitAttributeReference> VisitReferenceAttributeList(
+        ReferenceAttributeListContext context)
+    {
+        return context.referenceAttribute().Select(VisitReferenceAttribute);
     }
 
     public static ExplicitAttributeReference VisitReferenceAttribute(ReferenceAttributeContext context)
@@ -199,7 +206,7 @@ public static class ExpressionVisitor
 
     private static IExpressionNode VisitExpressionValue_functionCall(ExpressionValue_functionCallContext context)
     {
-        throw new NotImplementedException();
+        return VisitExpressionFunctionCall(context.expressionFunctionCall());
     }
 
     private static IExpressionNode ExpressionValue_literal(ExpressionValue_literalContext context)
@@ -221,6 +228,26 @@ public static class ExpressionVisitor
         return new ExplicitAttributeReferenceExpressionNode(
             VisitReferenceAttribute(context.referenceAttribute())
         );
+    }
+
+    private static IExpressionNode VisitExpressionFunctionCall(ExpressionFunctionCallContext context)
+    {
+        var functionName = context.identifier().ToIdentifier().Value;
+        var expressions = VisitExpressionList(context.expressionList());
+
+        return functionName.ToUpperInvariant() switch
+        {
+            "COUNT" => new CountExpressionNode(expressions.Single(), false),
+            "MAX" => new MaxExpressionNode(expressions.Single()),
+            "MIN" => new MinExpressionNode(expressions.Single()),
+
+            _ => throw new InvalidOperationException($"Unknown function {functionName}")
+        };
+    }
+
+    private static IEnumerable<IExpressionNode> VisitExpressionList(ExpressionListContext context)
+    {
+        return context.expression().Select(VisitExpression);
     }
 
     private static IExpressionNode VisitExpressionLiteral(ExpressionLiteralContext context)
@@ -274,5 +301,15 @@ public static class ExpressionVisitor
     private static IExpressionNode VisitLiteralDouble(LiteralDoubleContext context)
     {
         throw new NotSupportedException("Double not supported yet");
+    }
+
+    public static TupleExpressionNode VisitValueList(ValueListContext context)
+    {
+        return new TupleExpressionNode(context.valueItem().Select(VisitValueItem));
+    }
+
+    public static IExpressionNode VisitValueItem(ValueItemContext context)
+    {
+        return VisitExpression(context.expression());
     }
 }
