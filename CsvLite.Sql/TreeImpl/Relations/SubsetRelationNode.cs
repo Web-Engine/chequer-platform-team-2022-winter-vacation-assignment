@@ -32,7 +32,7 @@ public class SubsetRelationNode : BaseInheritRelationNode
 
         var indexes = ReferenceNodes
             .SelectMany(node => node.Value.GetAttributeIndexes(context, out _))
-            .WithIndex()
+            .Select((innerIndex, outerIndex) => (innerIndex, outerIndex))
             .ToList();
 
         var relation = new SubsetRelation(writableRelation, indexes);

@@ -1,6 +1,6 @@
 using CsvLite.Models.Identifiers;
 
-namespace CsvLite.Models.Attributes;
+namespace CsvLite.Sql.Models.Attributes;
 
 public interface IAttributeReference
 {

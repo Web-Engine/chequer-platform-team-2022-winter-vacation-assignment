@@ -1,5 +1,4 @@
-﻿using CsvLite.Models.Attributes;
-using CsvLite.Models.Values;
+﻿using CsvLite.Models.Values;
 
 namespace CsvLite.Models.Records;
 

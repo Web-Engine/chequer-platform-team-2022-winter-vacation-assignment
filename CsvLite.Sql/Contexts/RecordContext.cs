@@ -1,4 +1,3 @@
-using CsvLite.Models.Attributes;
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;

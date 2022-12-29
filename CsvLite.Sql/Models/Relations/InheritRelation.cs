@@ -11,9 +11,11 @@ public class InheritRelation : IRelation
 
     public IEnumerable<IRecord> Records { get; }
 
-    public InheritRelation(IRelationContext context,
+    public InheritRelation(
+        IRelationContext context,
         IReadOnlyList<IAttribute>? attributes = null,
-        IEnumerable<IRecord>? records = null)
+        IEnumerable<IRecord>? records = null
+    )
         : this(context.Relation, attributes, records)
     {
     }

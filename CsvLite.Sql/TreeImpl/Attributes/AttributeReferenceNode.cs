@@ -1,6 +1,7 @@
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Utilities;
@@ -33,10 +34,8 @@ public class AttributeReferenceNode : IAttributeReferenceNode
                 continue;
             }
 
-            var attributes = context.AttributeIdentifiers
-                .WithIndex()
-                .Where(x => Reference.IsReferencing(x.Value))
-                .Select(x => context.Attributes[x.Index])
+            var attributes = FindAttributeIndexesInternal(context)
+                .Select(index => context.Attributes[index])
                 .ToList();
 
             if (attributes.Count == 0)
@@ -64,12 +63,7 @@ public class AttributeReferenceNode : IAttributeReferenceNode
                 continue;
             }
 
-            var indexes = initialContext.AttributeIdentifiers
-                .WithIndex()
-                .Where(x => Reference.IsReferencing(x.Value))
-                .Select(x => x.Index)
-                .ToList();
-
+            var indexes = FindAttributeIndexesInternal(context).ToList();
 
             if (indexes.Count == 0)
             {
@@ -96,10 +90,8 @@ public class AttributeReferenceNode : IAttributeReferenceNode
                 continue;
             }
 
-            var values = initialContext.AttributeIdentifiers
-                .WithIndex()
-                .Where(x => Reference.IsReferencing(x.Value))
-                .Select(x => context.Record[x.Index])
+            var values = FindAttributeIndexesInternal(context)
+                .Select(index => context.Record[index])
                 .ToList();
 
             if (values.Count == 0)
@@ -113,5 +105,13 @@ public class AttributeReferenceNode : IAttributeReferenceNode
         }
 
         throw new InvalidOperationException($"Cannot resolve attribute using {Reference}");
+    }
+
+    private IEnumerable<int> FindAttributeIndexesInternal(IRelationContext context)
+    {
+        return context.AttributeIdentifiers
+            .Select((identifier, index) => (identifier, index))
+            .Where(x => Reference.IsReferencing(x.identifier))
+            .Select(x => x.index);
     }
 }

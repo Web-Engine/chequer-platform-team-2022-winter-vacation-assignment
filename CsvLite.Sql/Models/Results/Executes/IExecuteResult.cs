@@ -1,4 +1,4 @@
-﻿namespace CsvLite.Sql.Models.Results;
+﻿namespace CsvLite.Sql.Models.Results.Executes;
 
 public interface IExecuteResult
 {

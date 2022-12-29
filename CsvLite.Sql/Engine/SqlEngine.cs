@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Models.Relations;
-using CsvLite.Sql.Models.Results;
+using CsvLite.Sql.Models.Results.Actions;
+using CsvLite.Sql.Models.Results.Executes;
 using CsvLite.Sql.Tree.Actions;
 
 namespace CsvLite.Sql.Engine;
 
-public class SqlEngine
+public class SqlEngine : IEngine
 {
     private readonly IPhysicalRelationProvider _provider;
 
@@ -18,53 +18,46 @@ public class SqlEngine
 
     public IExecuteResult Execute(IActionNode node)
     {
-        return node switch
-        {
-            IRelationActionNode relationAction => ExecuteRelationAction(relationAction),
-            IAppendRecordActionNode appendRecordAction => ExecuteAppendRecordAction(appendRecordAction),
+        var stopwatch = Stopwatch.StartNew();
 
-            _ => throw new NotSupportedException($"SqlEngine does not support {node.GetType()}")
+        var context = new RootContext(_provider);
+        var actionResult = node.Execute(context);
+
+        stopwatch.Stop();
+
+        return actionResult switch
+        {
+            IRelationActionResult {Relation: var relation} =>
+                new RelationResult(relation, stopwatch.Elapsed),
+
+            IAppendRecordActionResult {Count: var count} =>
+                new AppendRecordsResult(count, stopwatch.Elapsed),
+
+            _ => throw new InvalidOperationException($"Wrong Action Result {actionResult.GetType()}")
         };
     }
 
-    private IRelationResult ExecuteRelationAction(IRelationActionNode node)
+    private class RelationResult : IRelationResult
     {
-        var stopwatch = Stopwatch.StartNew();
+        public IRelation Relation { get; }
+        public TimeSpan Elapsed { get; }
 
-        var context = new RootContext(_provider);
-        var relationContext = node.RelationNode.Evaluate(context);
-
-        var result = new InheritRelation(
-            relationContext.Relation,
-            records: relationContext.Records.ToList()
-        );
-
-        stopwatch.Stop();
-
-        return new RelationResult(result, stopwatch.Elapsed);
+        public RelationResult(IRelation relation, TimeSpan elapsed)
+        {
+            Relation = relation;
+            Elapsed = elapsed;
+        }
     }
 
-    private IAppendRecordResult ExecuteAppendRecordAction(IAppendRecordActionNode node)
+    private class AppendRecordsResult : IAppendRecordsResult
     {
-        var stopwatch = Stopwatch.StartNew();
+        public int Count { get; }
+        public TimeSpan Elapsed { get; }
 
-        var context = new RootContext(_provider);
-        var relation1 = node.TargetRelationNode.Evaluate(context);
-
-        if (relation1 is not IWritableRelation writableRelation)
-            throw new InvalidOperationException("Cannot insert to non-writable relation");
-
-        var relation2 = node.ValueRelationNode.Evaluate(context);
-
-        var records = relation2.Records.ToList();
-
-        writableRelation.AddRecords(records);
-
-        stopwatch.Stop();
-
-        return new AppendRecordResult(
-            records.Count,
-            stopwatch.Elapsed
-        );
+        public AppendRecordsResult(int count, TimeSpan elapsed)
+        {
+            Count = count;
+            Elapsed = elapsed;
+        }
     }
 }

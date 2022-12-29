@@ -1,6 +1,4 @@
-﻿using CsvLite.Models.Records;
-
-namespace CsvLite.Models.Relations;
+﻿namespace CsvLite.Models.Relations;
 
 public interface IPhysicalRelation : IWritableRelation
 {

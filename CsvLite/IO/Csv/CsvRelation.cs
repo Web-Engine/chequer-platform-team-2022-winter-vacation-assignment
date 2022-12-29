@@ -7,7 +7,6 @@ using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Models.Values;
-using CsvLite.Models.Values.Primitives;
 
 namespace CsvLite.IO.Csv;
 

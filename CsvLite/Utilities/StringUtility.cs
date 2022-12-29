@@ -45,6 +45,4 @@ public static class StringUtility
 
         return builder.ToString();
     }
-    
-    // public static string Start
 }

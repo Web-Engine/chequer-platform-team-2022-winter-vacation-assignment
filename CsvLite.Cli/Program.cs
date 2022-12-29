@@ -4,6 +4,7 @@ using CsvHelper;
 using CsvLite.IO.Csv;
 using CsvLite.Sql.Engine;
 using CsvLite.Sql.Models.Results;
+using CsvLite.Sql.Models.Results.Executes;
 using CsvLite.Sql.Optimizers;
 using CsvLite.Sql.Parsers;
 
@@ -116,7 +117,7 @@ public class Program
                 if (result is IRelationResult relationResult)
                     relationPresenter.Show(relationResult.Relation);
 
-                else if (result is IAppendRecordResult appendRecordResult)
+                else if (result is IAppendRecordsResult appendRecordResult)
                     Console.WriteLine($"{appendRecordResult.Count} Rows Inserted");
 
                 Console.WriteLine($"Time elapsed: {result.Elapsed}");
