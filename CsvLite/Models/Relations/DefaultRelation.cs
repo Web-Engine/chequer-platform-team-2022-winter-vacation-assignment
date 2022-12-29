@@ -5,12 +5,12 @@ namespace CsvLite.Models.Relations;
 
 public class DefaultRelation : IRelation
 {
-    public IAttributeList Attributes { get; }
+    public IReadOnlyList<IAttribute> Attributes { get; }
     public IEnumerable<IRecord> Records { get; }
 
-    public DefaultRelation(IAttributeList attributes, IEnumerable<IRecord> records)
+    public DefaultRelation(IEnumerable<IAttribute> attributes, IEnumerable<IRecord> records)
     {
-        Attributes = attributes;
+        Attributes = attributes.ToList();
         Records = records;
     }
 }

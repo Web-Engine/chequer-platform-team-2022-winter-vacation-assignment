@@ -35,16 +35,16 @@ public class Program
     //
     //     Console.WriteLine();
     // }
-    
-    public static void Main(string[] args)
-    {
-        var relationPresenter = new RelationPresenter(Console.Out);
-        var parser = new SqlParser();
 
-        const string sql = @"
-SELECT COUNT(*), Sex FROM ""datasets/freshman_lbs.csv"" as kgs GROUP BY ""Sex""
-";
-
+//     public static void Main(string[] args)
+//     {
+//         var relationPresenter = new RelationPresenter(Console.Out);
+//         var parser = new SqlParser();
+//
+// //         const string sql = @"
+// // SELECT COUNT(*), Sex FROM ""datasets/freshman_lbs.csv"" as kgs GROUP BY ""Sex""
+// // ";
+//
 //         const string sql = @"
 //             SELECT
 //                 *
@@ -54,67 +54,77 @@ SELECT COUNT(*), Sex FROM ""datasets/freshman_lbs.csv"" as kgs GROUP BY ""Sex""
 //             WHERE
 //                 (
 //                     SELECT
-//                          *
+//                          COUNT(*)
 //                      FROM
 //                         ""datasets/freshman_kgs.csv"" d1,
-//                         ""datasets/freshman_kgs.csv"" d2
+//                         ""datasets/freshman_kgs.csv"" d2,
+//                         ""datasets/freshman_kgs.csv"" d3
 //                 ) OR TRUE
-//             LIMIT 100
+//             LIMIT 10
 // ";
+//
+//         var provider = new CsvRelationProvider();
+//         var engine = new SqlEngine(provider);
+//
+//         var optimizer = new RuleBasedOptimizer();
+//
+//         var action = parser.Parse(sql);
+//         action = optimizer.Optimize(action);
+//         
+//         var result = engine.Execute(action);
+//
+//         if (result is IRelationResult {Relation: var relation})
+//         {
+//             relationPresenter.Show(relation);
+//         }
+//
+//         if (result is IAppendRecordResult { Count: var count})
+//         {
+//             Console.WriteLine($"{count} Records Inserted");
+//         }
+//
+//         Console.WriteLine($"Time elapsed: {result.Elapsed}");
+//
+// }
 
-        var provider = new CsvRelationProvider();
-        var engine = new SqlEngine(provider);
-
+    public static void Main(string[] args)
+    {
+        var relationProvider = new CsvRelationProvider();
+        var sqlEngine = new SqlEngine(relationProvider);
+        var parser = new SqlParser();
         var optimizer = new RuleBasedOptimizer();
+        var relationPresenter = new RelationPresenter(Console.Out);
 
-        var action = parser.Parse(sql);
-        action = optimizer.Optimize(action);
-        
-        var result = engine.Execute(action);
-
-        if (result is IRelationResult {Relation: var relation})
+        while (true)
         {
-            relationPresenter.Show(relation);
+            Console.Write("CQL> ");
+
+            var sql = Console.ReadLine();
+            if (sql is null || sql.Trim().Replace(";", "").Equals("exit"))
+            {
+                Console.WriteLine("Goodbye");
+                break;
+            }
+
+            try
+            {
+                var action = parser.Parse(sql);
+                action = optimizer.Optimize(action);
+
+                var result = sqlEngine.Execute(action);
+
+                if (result is IRelationResult relationResult)
+                    relationPresenter.Show(relationResult.Relation);
+
+                else if (result is IAppendRecordResult appendRecordResult)
+                    Console.WriteLine($"{appendRecordResult.Count} Rows Inserted");
+
+                Console.WriteLine($"Time elapsed: {result.Elapsed}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
-
-        if (result is IAppendRecordResult { Count: var count})
-        {
-            Console.WriteLine($"{count} Records Inserted");
-        }
-
-        Console.WriteLine($"Time elapsed: {result.Elapsed}");
-        // relationPresenter.Show(relation);
-
-        // using var writer = new CsvWriter("copied.csv");
-        // writer.Write(relation);
-
-        // var provider = new CsvRelationProvider();
-        //
-        // var parser = new SqlParser();
-        // while (true)
-        // {
-        //     Console.Write("CQL> ");
-        //
-        //     var sql = Console.ReadLine();
-        //     if (sql.Trim().Replace(";", "").Equals("exit"))
-        //     {
-        //         Console.WriteLine("Goodbye");
-        //         break;
-        //     }
-        //
-        //     try
-        //     {
-        //         var action = parser.Parse(sql);
-        //
-        //         var result = action.Execute(provider);
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         Console.WriteLine(e);
-        //     }
-        // }
-        //
-        // Console.WriteLine("Done");
-        // action.Execute(provider);
     }
 }

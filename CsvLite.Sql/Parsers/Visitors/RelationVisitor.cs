@@ -1,4 +1,5 @@
 using CsvLite.Models.Identifiers;
+using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Expressions;
@@ -74,9 +75,7 @@ public static class RelationVisitor
     {
         var allReference = ExpressionVisitor.VisitReferenceAllAttribute(context.referenceAllAttribute());
 
-        return new AllAttributeDefinitionNode(
-            new AllAttributeReferenceExpressionNode(allReference)
-        );
+        return new AllAttributeDefinitionNode(allReference);
     }
 
     private static IAttributeDefinitionNode VisitSelectItem_expression(SelectItem_expressionContext context)
@@ -152,6 +151,11 @@ public static class RelationVisitor
     {
         var references = ExpressionVisitor.VisitReferenceAttributeList(context.referenceAttributeList());
 
+        if (context.clauseHaving() is { } clauseHavingContext)
+        {
+            throw new NotSupportedException("Not supported yet");
+        }
+
         return new AggregateRelationNode(
             relationNode,
             references
@@ -186,7 +190,10 @@ public static class RelationVisitor
         if (context.attributeList() is not { } attributeListContext)
             return relationNode;
 
-        var attributes = VisitAttributeList(attributeListContext);
+        var attributes = VisitAttributeList(attributeListContext)
+            .Select(identifier => new AttributeReferenceNode(
+                new ExplicitAttributeReference(new QualifiedIdentifier(identifier))
+            ));
 
         return new SubsetRelationNode(
             relationNode,

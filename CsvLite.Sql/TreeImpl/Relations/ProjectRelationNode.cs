@@ -1,10 +1,7 @@
-﻿using CsvLite.IO.Csv;
-using CsvLite.Models.Attributes;
-using CsvLite.Models.Identifiers;
-using CsvLite.Models.Relations;
+﻿using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Models.Relations;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Relations;
@@ -42,17 +39,17 @@ public class ProjectRelationNode : BaseInheritRelationNode
             .ToList();
     }
 
-    protected override IRelation Evaluate(IRelationContext context)
+    protected override IRelationContext Resolve(IRootContext rootContext)
     {
-        var newAttributes = _attributeDefinitions
-            .SelectMany(definitionNode => definitionNode.Value.EvaluateAttributes(context));
+        var context = base.Resolve(rootContext);
 
-        var attributes = new DefaultAttributeList(newAttributes);
+        var attributes = _attributeDefinitions
+            .SelectMany(definitionNode => definitionNode.Value.EvaluateAttributes(context));
 
         var newRecords = context.Relation.Records
             .Select(record =>
             {
-                var recordContext = context.CreateRecordContext(record);
+                var recordContext = new RecordContext(context, record);
 
                 var values = _attributeDefinitions.SelectMany(definitionNode =>
                     definitionNode.Value.EvaluateValues(recordContext)
@@ -61,10 +58,8 @@ public class ProjectRelationNode : BaseInheritRelationNode
                 return new DefaultRecord(values);
             });
 
+        var relation = new DefaultRelation(attributes, newRecords);
 
-        return new DefaultRelation(
-            attributes,
-            newRecords
-        );
+        return new AnonymousRelationContext(rootContext, relation);
     }
 }

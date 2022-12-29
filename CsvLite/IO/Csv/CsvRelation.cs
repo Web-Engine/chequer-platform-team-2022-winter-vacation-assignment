@@ -8,13 +8,12 @@ using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Models.Values;
 using CsvLite.Models.Values.Primitives;
-using CsvLite.Utilities;
 
 namespace CsvLite.IO.Csv;
 
 public class CsvRelation : IPhysicalRelation
 {
-    public IAttributeList Attributes
+    public IReadOnlyList<IAttribute> Attributes
     {
         get
         {
@@ -24,20 +23,54 @@ public class CsvRelation : IPhysicalRelation
         }
     }
 
-    private DefaultAttributeList? _attributes;
+    private List<IAttribute>? _attributes;
 
-    public IEnumerable<IRecord> Records => new CsvRecordList(_filePath);
+    public IEnumerable<IRecord> Records
+    {
+        get
+        {
+            lock (_cache)
+            {
+                foreach (var cache in _cache)
+                {
+                    yield return cache;
+                }
+
+                using var enumerator = CsvRecordsList.GetEnumerator();
+                for (var i = 0; i < _cache.Count; i++)
+                {
+                    if (!enumerator.MoveNext()) break;
+                }
+
+                for (var i = _cache.Count; i < _cacheLimit; i++)
+                {
+                    if (!enumerator.MoveNext())
+                        break;
+
+                    _cache.Add(enumerator.Current);
+
+                    yield return enumerator.Current;
+                }
+
+                while (enumerator.MoveNext())
+                    yield return enumerator.Current;
+            }
+        }
+    }
+
+    private CsvRecordList CsvRecordsList => new(_filePath);
 
     private readonly string _filePath;
-    private readonly Identifier _relationIdentifier;
+
+    private readonly List<IRecord> _cache = new(100);
+    private readonly int _cacheLimit = 100;
 
     public CsvRelation(Identifier identifier)
     {
-        _relationIdentifier = identifier;
         _filePath = identifier.Value;
     }
 
-    private DefaultAttributeList ReadAttributes()
+    private List<IAttribute> ReadAttributes()
     {
         using var streamReader = new StreamReader(_filePath);
         using var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture);
@@ -48,15 +81,12 @@ public class CsvRelation : IPhysicalRelation
         if (csvReader.HeaderRecord is not { } headerRecord)
             throw new InvalidOperationException("Missing CSV Header Records");
 
-        var attributes = new DefaultAttributeList(
+        var attributes = new List<IAttribute>(
             headerRecord.Select(name =>
             {
                 var attributeIdentifier = new Identifier(name);
 
-                return new DefaultAttribute(
-                    _relationIdentifier,
-                    attributeIdentifier
-                );
+                return new DefaultAttribute(attributeIdentifier);
             })
         );
 
@@ -74,7 +104,7 @@ public class CsvRelation : IPhysicalRelation
         foreach (var record in records)
         {
             csvWriter.NextRecord();
-            
+
             foreach (var value in record)
             {
                 csvWriter.WriteField(value.AsString().Value);
@@ -133,11 +163,7 @@ public class CsvRelation : IPhysicalRelation
             _current = new DefaultRecord(
                 Enumerable.Range(0, _attributeCount)
                     .Select(index => _csvReader.GetField(index))
-                    .Select<string?, IValue>(
-                        str => str is null
-                            ? NullValue.Null
-                            : new StringValue(str)
-                    )
+                    .Select(PrimitiveValue.Parse)
             );
 
             return true;

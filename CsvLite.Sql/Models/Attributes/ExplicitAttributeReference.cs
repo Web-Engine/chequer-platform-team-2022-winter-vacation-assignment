@@ -12,13 +12,13 @@ public class ExplicitAttributeReference : IAttributeReference
         _identifier = identifier;
     }
 
-    public bool IsReferencing(IAttribute attribute)
+    public bool IsReferencing(QualifiedIdentifier attributeIdentifier)
     {
         return _identifier.Level switch
         {
-            1 => _identifier[0].Equals(attribute.Name),
-            2 => _identifier.Equals(attribute.Alias),
-            
+            1 => _identifier[0].Equals(attributeIdentifier[1]),
+            2 => _identifier.SequenceEqual(attributeIdentifier),
+
             _ => throw new InvalidOperationException($"Wrong identifier level {_identifier.Level}")
         };
     }

@@ -20,14 +20,20 @@ public abstract class BaseInheritRelationNode : IRelationNode
         RelationNode = relationNode.ToNodeValue();
     }
 
-    IRelation IRelationNode.Evaluate(IRootContext context)
+    IRelationContext IRelationNode.Evaluate(IRootContext rootContext)
     {
-        var relation = RelationNode.Value.Evaluate(context);
+        var context = Resolve(rootContext);
 
-        var relationContext = context.CreateRelationContext(relation);
-        
-        return Evaluate(relationContext);
+        return Evaluate(context);
     }
 
-    protected abstract IRelation Evaluate(IRelationContext context);
+    protected virtual IRelationContext Resolve(IRootContext rootContext)
+    {
+        return RelationNode.Value.Evaluate(rootContext);
+    }
+
+    protected virtual IRelationContext Evaluate(IRelationContext context)
+    {
+        return context;
+    }
 }

@@ -23,8 +23,8 @@ public class RelationExpressionNode : IExpressionNode
 
     public IValue Evaluate(IRecordContext context)
     {
-        var relation = RelationNode.Evaluate(context);
+        var relationContext = RelationNode.Evaluate(context);
 
-        return new RelationValue(relation);
+        return new RelationValue(relationContext.Relation);
     }
 }

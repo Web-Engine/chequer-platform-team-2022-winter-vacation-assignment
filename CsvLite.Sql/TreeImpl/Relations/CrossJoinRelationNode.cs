@@ -1,5 +1,7 @@
 ﻿using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.RelationContexts;
+using CsvLite.Sql.Models.Records;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree.Relations;
 
@@ -14,8 +16,16 @@ public class CrossJoinRelationNode : BaseBinaryRelationNode
     {
     }
 
-    protected override IRelation Evaluate(IRelationContext context1, IRelationContext context2)
+    protected override IRelationContext Combine(IRelationContext context1, IRelationContext context2)
     {
-        return new ComplexRelation(context1.Relation, context2.Relation);
+        var relation = new DefaultRelation(
+            context1.Attributes.Concat(context2.Attributes),
+            context1.Records.SelectMany(
+                _ => context2.Records,
+                (record1, record2) => new ConcatRecord(record1, record2)
+            )
+        );
+
+        return new CombineRelationContext(context1, context2, relation);
     }
 }

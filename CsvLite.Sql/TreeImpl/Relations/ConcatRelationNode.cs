@@ -1,6 +1,7 @@
 ﻿using CsvLite.IO.Csv;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree.Relations;
 
@@ -13,17 +14,16 @@ public class ConcatRelationNode : BaseBinaryRelationNode
     {
     }
 
-    protected override IRelation Evaluate(IRelationContext context1, IRelationContext context2)
+    protected override IRelationContext Combine(IRelationContext context1, IRelationContext context2)
     {
-        var relation1 = context1.Relation;
-        var relation2 = context2.Relation;
-
-        if (relation1.Attributes.Count != relation2.Attributes.Count)
+        if (context1.Attributes.Count != context2.Attributes.Count)
             throw new Exception("Cannot concat(union) difference attribute size relations");
 
-        return new InheritRelation(
-            relation1,
-            records: relation1.Records.Concat(relation2.Records)
+        var relation = new InheritRelation(
+            context1.Relation,
+            records: context1.Records.Concat(context2.Records)
         );
+
+        return new InheritRelationContext(context1, relation);
     }
 }

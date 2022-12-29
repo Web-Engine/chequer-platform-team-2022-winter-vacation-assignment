@@ -2,6 +2,7 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree.Relations;
 
@@ -16,15 +17,14 @@ public class AliasRelationNode : BaseInheritRelationNode
         _alias = alias;
     }
 
-    protected override IRelation Evaluate(IRelationContext context)
+    protected override IRelationContext Resolve(IRootContext rootContext)
     {
-        return new InheritRelation(
-            context,
-            
-            attributeTransformer:
-            attribute => new DefaultAttribute(
-                _alias,
-                attribute.Name
-            ));
+        var baseContext = base.Resolve(rootContext);
+
+        return new NamedRelationContext(
+            rootContext,
+            _alias,
+            baseContext.Relation
+        );
     }
 }

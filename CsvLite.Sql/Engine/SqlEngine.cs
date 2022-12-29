@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Models.Results;
 using CsvLite.Sql.Tree.Actions;
 
@@ -31,17 +32,22 @@ public class SqlEngine
         var stopwatch = Stopwatch.StartNew();
 
         var context = new RootContext(_provider);
-        var relation = node.RelationNode.Evaluate(context);
+        var relationContext = node.RelationNode.Evaluate(context);
+
+        var result = new InheritRelation(
+            relationContext.Relation,
+            records: relationContext.Records.ToList()
+        );
 
         stopwatch.Stop();
 
-        return new RelationResult(relation, stopwatch.Elapsed);
+        return new RelationResult(result, stopwatch.Elapsed);
     }
 
     private IAppendRecordResult ExecuteAppendRecordAction(IAppendRecordActionNode node)
     {
         var stopwatch = Stopwatch.StartNew();
-        
+
         var context = new RootContext(_provider);
         var relation1 = node.TargetRelationNode.Evaluate(context);
 
@@ -49,11 +55,11 @@ public class SqlEngine
             throw new InvalidOperationException("Cannot insert to non-writable relation");
 
         var relation2 = node.ValueRelationNode.Evaluate(context);
-        
+
         var records = relation2.Records.ToList();
-        
+
         writableRelation.AddRecords(records);
-        
+
         stopwatch.Stop();
 
         return new AppendRecordResult(

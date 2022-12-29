@@ -1,5 +1,6 @@
 using CsvLite.Models.Records;
 using CsvLite.Models.Values.Primitives;
+using CsvLite.Utilities;
 
 namespace CsvLite.Models.Values;
 
@@ -28,7 +29,7 @@ public sealed class TupleValue : List<IValue>, IValue
     {
         return this;
     }
-    
+
     public static TupleValue FromRecord(IRecord record)
     {
         return new TupleValue(record);
@@ -50,5 +51,20 @@ public sealed class TupleValue : List<IValue>, IValue
     public override int GetHashCode()
     {
         return this.Aggregate(0, (sum, value) => sum * 31 + value.GetHashCode());
+    }
+
+    public BooleanValue AsBoolean()
+    {
+        return new BooleanValue(Count != 0);
+    }
+
+    public IntegerValue AsInteger()
+    {
+        return AsPrimitive().AsInteger();
+    }
+
+    public StringValue AsString()
+    {
+        return AsPrimitive().AsString();
     }
 }

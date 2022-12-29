@@ -7,17 +7,22 @@ namespace CsvLite.Sql.Models.Relations;
 
 public class InheritRelation : IRelation
 {
-    public IAttributeList Attributes { get; }
+    public IReadOnlyList<IAttribute> Attributes { get; }
 
     public IEnumerable<IRecord> Records { get; }
 
-    public InheritRelation(IRelationContext context, IAttributeList? attributes = null,
+    public InheritRelation(IRelationContext context,
+        IReadOnlyList<IAttribute>? attributes = null,
         IEnumerable<IRecord>? records = null)
         : this(context.Relation, attributes, records)
     {
     }
 
-    public InheritRelation(IRelation relation, IAttributeList? attributes = null, IEnumerable<IRecord>? records = null)
+    public InheritRelation(
+        IRelation relation,
+        IReadOnlyList<IAttribute>? attributes = null,
+        IEnumerable<IRecord>? records = null
+    )
     {
         Attributes = attributes ?? relation.Attributes;
         Records = records ?? relation.Records;
@@ -41,11 +46,10 @@ public class InheritRelation : IRelation
         Func<IRecord, IRecord>? recordTransformer = null
     )
     {
-        Attributes = new DefaultAttributeList(
-            relation.Attributes
-                .Where(attribute => attributeFilter?.Invoke(attribute) ?? true)
-                .Select(attribute => attributeTransformer?.Invoke(attribute) ?? attribute)
-        );
+        Attributes = relation.Attributes
+            .Where(attribute => attributeFilter?.Invoke(attribute) ?? true)
+            .Select(attribute => attributeTransformer?.Invoke(attribute) ?? attribute)
+            .ToList();
 
         Records = relation.Records
             .Where(record => recordFilter?.Invoke(record) ?? true)

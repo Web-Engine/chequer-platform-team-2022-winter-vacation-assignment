@@ -1,4 +1,5 @@
 using CsvLite.Models.Relations;
+using CsvLite.Models.Values.Primitives;
 
 namespace CsvLite.Models.Values;
 
@@ -30,5 +31,20 @@ public sealed class RelationValue : IValue
             throw new InvalidOperationException($"Cannot convert {GetType()} to TupleValue");
 
         return new TupleValue(records[0]);
+    }
+
+    public BooleanValue AsBoolean()
+    {
+        return new BooleanValue(Relation.Attributes.Count != 0 && Relation.Records.Any());
+    }
+
+    public IntegerValue AsInteger()
+    {
+        return AsPrimitive().AsInteger();
+    }
+
+    public StringValue AsString()
+    {
+        return AsPrimitive().AsString();
     }
 }

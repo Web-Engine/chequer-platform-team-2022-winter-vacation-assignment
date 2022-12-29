@@ -1,5 +1,6 @@
 ﻿using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree.Relations;
 
@@ -13,13 +14,14 @@ internal class LimitRelationNode : BaseInheritRelationNode
     {
         _limit = limit;
     }
-    
-    protected override IRelation Evaluate(IRelationContext context)
+
+    protected override IRelationContext Evaluate(IRelationContext context)
     {
-        return new InheritRelation(
+        var relation = new InheritRelation(
             context,
-            
             records: context.Records.Take(_limit)
         );
+
+        return new InheritRelationContext(context, relation);
     }
 }

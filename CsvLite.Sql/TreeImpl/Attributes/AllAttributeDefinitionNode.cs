@@ -12,31 +12,23 @@ public class AllAttributeDefinitionNode : IAttributeDefinitionNode
 {
     public IEnumerable<INodeValue> Children
     {
-        get { yield return ExpressionNode; }
+        get { yield return AttributeReferenceNode; }
     }
 
-    public NodeValue<IAllAttributeReferenceExpressionNode> ExpressionNode { get; }
+    public NodeValue<IAttributeReferenceNode> AttributeReferenceNode { get; }
 
-    public AllAttributeDefinitionNode(IAllAttributeReferenceExpressionNode expressionNode)
+    public AllAttributeDefinitionNode(IAttributeReferenceNode attributeReferenceNode)
     {
-        ExpressionNode = expressionNode.ToNodeValue();
+        AttributeReferenceNode = attributeReferenceNode.ToNodeValue();
     }
 
     public IEnumerable<IAttribute> EvaluateAttributes(IRelationContext context)
     {
-        var indexedAttributes = context.Relation.Attributes
-            .FindAttributes(ExpressionNode.Value.AttributeReference);
-
-        return indexedAttributes.Select(x => x.Attribute);
+        return AttributeReferenceNode.Value.GetAttributes(context, out _);
     }
 
     public IEnumerable<IValue> EvaluateValues(IRecordContext context)
     {
-        var value = ExpressionNode.Value.Evaluate(context);
-
-        if (value is not TupleValue tuple)
-            throw new InvalidOperationException("DB ERROR Occurred");
-
-        return tuple;
+        return AttributeReferenceNode.Value.GetValues(context, out _);
     }
 }

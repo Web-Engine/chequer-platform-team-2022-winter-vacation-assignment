@@ -12,14 +12,14 @@ public class AllAttributeReference : IAttributeReference
         _relationIdentifier = relationIdentifier;
     }
 
-    public bool IsReferencing(IAttribute attribute)
+    public bool IsReferencing(QualifiedIdentifier identifier)
     {
         if (_relationIdentifier is null)
             return true;
 
-        if (attribute.Alias.Level <= 1)
+        if (identifier.Level <= 1)
             return false;
 
-        return _relationIdentifier.Equals(attribute.Alias[0]);
+        return _relationIdentifier.Equals(identifier.Last());
     }
 }

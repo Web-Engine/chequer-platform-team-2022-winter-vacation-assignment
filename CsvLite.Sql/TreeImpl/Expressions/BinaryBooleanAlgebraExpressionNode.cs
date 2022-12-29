@@ -47,7 +47,7 @@ public class BinaryBooleanAlgebraExpressionNode : IPrimitiveExpressionNode
 
         return Evaluate(value1, value2);
     }
-
+    
     public BooleanValue Evaluate(IValue value1, IValue value2)
     {
         var boolean1 = value1.AsBoolean();

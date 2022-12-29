@@ -5,5 +5,5 @@ namespace CsvLite.Sql.Tree.Expressions;
 
 public interface IExpressionNode : INode
 {
-    IValue Evaluate(IRecordContext context);
+    IValue Evaluate(IRecordContext recordContext);
 }

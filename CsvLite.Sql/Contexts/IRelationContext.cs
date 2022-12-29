@@ -7,15 +7,11 @@ namespace CsvLite.Sql.Contexts;
 
 public interface IRelationContext : IRootContext
 {
-    IContext? IContext.Parent => Parent;
-
-    new IRootContext? Parent { get; }
-
     IRelation Relation { get; }
 
-    IAttributeList Attributes => Relation.Attributes;
+    IReadOnlyList<IAttribute> Attributes => Relation.Attributes;
 
     IEnumerable<IRecord> Records => Relation.Records;
 
-    IRecordContext CreateRecordContext(IRecord record);
+    IEnumerable<QualifiedIdentifier> AttributeIdentifiers { get; }
 }

@@ -17,7 +17,7 @@ public class ExpressionAttributeDefinitionNode : IAttributeDefinitionNode
     }
 
     public NodeValue<IExpressionNode> ExpressionNode { get; }
-    
+
     private readonly Identifier _name;
 
     public ExpressionAttributeDefinitionNode(Identifier name, IExpressionNode expressionNode)
@@ -28,10 +28,7 @@ public class ExpressionAttributeDefinitionNode : IAttributeDefinitionNode
 
     public IEnumerable<IAttribute> EvaluateAttributes(IRelationContext context)
     {
-        yield return new DefaultAttribute(
-            Identifier.Empty,
-            _name
-        );
+        yield return new DefaultAttribute(_name);
     }
 
     public IEnumerable<IValue> EvaluateValues(IRecordContext context)

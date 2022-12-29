@@ -20,8 +20,8 @@ public class ReferenceRelationNode : IRelationNode
         Identifier = identifier;
     }
 
-    public IRelation Evaluate(IRootContext context)
+    public IRelationContext Evaluate(IRootContext context)
     {
-        return context.GetPhysicalRelation(Identifier);
+        return context.GetPhysicalContext(Identifier);
     }
 }

@@ -8,7 +8,7 @@ namespace CsvLite.Sql.TreeImpl.Relations;
 
 public abstract class BaseBinaryRelationNode : IRelationNode
 {
-    public IEnumerable<INodeValue> Children
+    public virtual IEnumerable<INodeValue> Children
     {
         get
         {
@@ -26,16 +26,30 @@ public abstract class BaseBinaryRelationNode : IRelationNode
         RelationNode2 = relationNode2.ToNodeValue();
     }
 
-    IRelation IRelationNode.Evaluate(IRootContext context)
+    IRelationContext IRelationNode.Evaluate(IRootContext rootContext)
     {
-        var relation1 = RelationNode1.Value.Evaluate(context);
-        var relation2 = RelationNode2.Value.Evaluate(context);
+        var context1 = Resolve1(rootContext);
+        var context2 = Resolve2(rootContext, context1);
 
-        var context1 = context.CreateRelationContext(relation1);
-        var context2 = context.CreateRelationContext(relation2);
+        var context = Combine(context1, context2);
 
-        return Evaluate(context1, context2);
+        return Evaluate(context);
     }
 
-    protected abstract IRelation Evaluate(IRelationContext context1, IRelationContext context2);
+    protected virtual IRelationContext Resolve1(IRootContext context)
+    {
+        return RelationNode1.Value.Evaluate(context);
+    }
+
+    protected virtual IRelationContext Resolve2(IRootContext rootContext, IRelationContext context1)
+    {
+        return RelationNode2.Value.Evaluate(context1);
+    }
+
+    protected abstract IRelationContext Combine(IRelationContext context1, IRelationContext context2);
+
+    protected virtual IRelationContext Evaluate(IRelationContext context)
+    {
+        return context;
+    }
 }

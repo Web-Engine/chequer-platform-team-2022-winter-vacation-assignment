@@ -1,3 +1,4 @@
+using CsvLite.Models.Attributes;
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
@@ -6,11 +7,15 @@ namespace CsvLite.Sql.Contexts;
 
 public sealed class RecordContext : IRecordContext
 {
+    IContext? IContext.Parent => Parent;
+
     public IRelationContext Parent { get; }
 
     public IRelation Relation => Parent.Relation;
 
     public IRecord Record { get; }
+
+    public IEnumerable<QualifiedIdentifier> AttributeIdentifiers => Parent.AttributeIdentifiers;
 
     public RecordContext(IRelationContext parent, IRecord record)
     {
@@ -18,18 +23,8 @@ public sealed class RecordContext : IRecordContext
         Record = record;
     }
 
-    public IPhysicalRelation GetPhysicalRelation(Identifier identifier)
+    public IRelationContext GetPhysicalContext(Identifier identifier)
     {
-        return Parent.GetPhysicalRelation(identifier);
-    }
-
-    public IRelationContext CreateRelationContext(IRelation relation)
-    {
-        return new RelationContext(this, relation);
-    }
-
-    public IRecordContext CreateRecordContext(IRecord record)
-    {
-        return Parent.CreateRecordContext(record);
+        return Parent.GetPhysicalContext(identifier);
     }
 }

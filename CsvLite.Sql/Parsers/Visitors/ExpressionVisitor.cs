@@ -1,7 +1,9 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Parsers.Antlr;
+using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Expressions;
+using CsvLite.Sql.TreeImpl.Attributes;
 using CsvLite.Sql.TreeImpl.Expressions;
 using CsvLite.Sql.TreeImpl.Expressions.Functions;
 using static CsvLite.Sql.Parsers.Antlr.AntlrSqlParser;
@@ -95,30 +97,36 @@ public static class ExpressionVisitor
         return VisitExpressionValue(context.expressionValue());
     }
 
-    public static IEnumerable<ExplicitAttributeReference> VisitReferenceAttributeList(
+    public static IEnumerable<IAttributeReferenceNode> VisitReferenceAttributeList(
         ReferenceAttributeListContext context)
     {
         return context.referenceAttribute().Select(VisitReferenceAttribute);
     }
 
-    public static ExplicitAttributeReference VisitReferenceAttribute(ReferenceAttributeContext context)
+    public static IAttributeReferenceNode VisitReferenceAttribute(ReferenceAttributeContext context)
     {
         var relationIdentifier = context.relationIdentifier?.ToIdentifier();
         var attributeIdentifier = context.attributeIdentifier.ToIdentifier();
 
         if (relationIdentifier is null)
-            return new ExplicitAttributeReference(new QualifiedIdentifier(attributeIdentifier));
+            return new AttributeReferenceNode(
+                new ExplicitAttributeReference(new QualifiedIdentifier(attributeIdentifier))
+            );
 
 
-        return new ExplicitAttributeReference(
-            new QualifiedIdentifier(relationIdentifier, attributeIdentifier)
+        return new AttributeReferenceNode(
+            new ExplicitAttributeReference(
+                new QualifiedIdentifier(relationIdentifier, attributeIdentifier)
+            )
         );
     }
 
-    public static AllAttributeReference VisitReferenceAllAttribute(ReferenceAllAttributeContext context)
+    public static AttributeReferenceNode VisitReferenceAllAttribute(ReferenceAllAttributeContext context)
     {
-        return new AllAttributeReference(
-            context.relationIdentifier?.ToIdentifier()
+        return new AttributeReferenceNode(
+            new AllAttributeReference(
+                context.relationIdentifier?.ToIdentifier()
+            )
         );
     }
 
@@ -217,7 +225,7 @@ public static class ExpressionVisitor
     private static IExpressionNode VisitExpressionValue_referenceAllAttribute(
         ExpressionValue_referenceAllAttributeContext context)
     {
-        return new AllAttributeReferenceExpressionNode(
+        return new AttributeReferenceExpressionNode(
             VisitReferenceAllAttribute(context.referenceAllAttribute())
         );
     }
@@ -225,7 +233,7 @@ public static class ExpressionVisitor
     private static IExpressionNode VisitExpressionValue_referenceAttribute(
         ExpressionValue_referenceAttributeContext context)
     {
-        return new ExplicitAttributeReferenceExpressionNode(
+        return new AttributeReferenceExpressionNode(
             VisitReferenceAttribute(context.referenceAttribute())
         );
     }

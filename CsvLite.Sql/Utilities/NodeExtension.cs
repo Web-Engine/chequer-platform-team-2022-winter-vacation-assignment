@@ -37,7 +37,7 @@ public static class NodeExtension
         return node.Value.Evaluate(context);
     }
     
-    public static IRelation Evaluate(this NodeValue<IRelationNode> node, IRelationContext context)
+    public static IRelationContext Evaluate(this NodeValue<IRelationNode> node, IRelationContext context)
     {
         return node.Value.Evaluate(context);
     }

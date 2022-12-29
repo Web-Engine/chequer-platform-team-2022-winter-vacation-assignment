@@ -1,5 +1,6 @@
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Models.Records;
 using CsvLite.Sql.Tree;
@@ -10,54 +11,50 @@ using CsvLite.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-public class LeftInnerJoinRelationNode : IRelationNode
+public class LeftInnerJoinRelationNode : BaseBinaryRelationNode
 {
-    public IEnumerable<INodeValue> Children
+    public override IEnumerable<INodeValue> Children
     {
         get
         {
-            yield return RelationNode1;
-            yield return RelationNode2;
+            foreach (var node in base.Children)
+                yield return node;
+
             yield return ExpressionNode;
         }
     }
 
-    public NodeValue<IRelationNode> RelationNode1 { get; }
-
-    public NodeValue<IRelationNode> RelationNode2 { get; }
-
     public NodeValue<IExpressionNode> ExpressionNode { get; }
 
-    public LeftInnerJoinRelationNode(IRelationNode relationNode1, IRelationNode relationNode2,
-        IExpressionNode expressionNode)
+    public LeftInnerJoinRelationNode(
+        IRelationNode relationNode1,
+        IRelationNode relationNode2,
+        IExpressionNode expressionNode
+    ) : base(relationNode1, relationNode2)
     {
-        RelationNode1 = relationNode1.ToNodeValue();
-        RelationNode2 = relationNode2.ToNodeValue();
         ExpressionNode = expressionNode.ToNodeValue();
     }
 
-    public IRelation Evaluate(IRootContext context)
+    protected override IRelationContext Combine(IRelationContext context1, IRelationContext context2)
     {
-        var relation1 = RelationNode1.Value.Evaluate(context);
-        var relation2 = RelationNode2.Value.Evaluate(context);
+        var attributes = context1.Attributes.Concat(context2.Attributes);
 
-        var relation1Context = context.CreateRelationContext(relation1);
+        var records = context1.Records.SelectMany(record1 =>
+        {
+            var record1Context = new RecordContext(context1, record1);
+            var nestedContext = new NestedRelationContext(record1Context, context2);
 
-        return new DefaultRelation(
-            new ConcatAttributeList(relation1.Attributes, relation2.Attributes),
-            relation1.Records.SelectMany(record1 =>
-            {
-                var record1Context = relation1Context.CreateRecordContext(record1);
-                var relation2Context = record1Context.CreateRelationContext(relation2);
+            return context2.Records.Where(record2 =>
+                {
+                    var record2Context = new RecordContext(nestedContext, record2);
 
-                return relation2.Records.Where(record2 =>
-                    {
-                        var record2Context = relation2Context.CreateRecordContext(record2);
+                    return ExpressionNode.Value.Evaluate(record2Context).AsBoolean().Value;
+                })
+                .Select(record2 => new ConcatRecord(record1, record2));
+        });
 
-                        return ExpressionNode.Value.Evaluate(record2Context).AsBoolean().Value;
-                    })
-                    .Select(record2 => new ConcatRecord(record1, record2));
-            })
-        );
+        var relation = new DefaultRelation(attributes, records);
+
+        return new CombineRelationContext(context1, context2, relation);
     }
 }

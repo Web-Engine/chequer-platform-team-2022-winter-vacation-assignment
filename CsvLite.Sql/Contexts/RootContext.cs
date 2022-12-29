@@ -1,5 +1,6 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
+using CsvLite.Sql.Contexts.RelationContexts;
 
 namespace CsvLite.Sql.Contexts;
 
@@ -13,14 +14,9 @@ public class RootContext : IRootContext
     {
         _provider = provider;
     }
-    
-    public IPhysicalRelation GetPhysicalRelation(Identifier identifier)
-    {
-        return _provider.GetRelation(identifier);
-    }
 
-    public IRelationContext CreateRelationContext(IRelation relation)
+    public IRelationContext GetPhysicalContext(Identifier identifier)
     {
-        return new RelationContext(this, relation);
+        return new NamedRelationContext(this, identifier, _provider.GetRelation(identifier));
     }
 }

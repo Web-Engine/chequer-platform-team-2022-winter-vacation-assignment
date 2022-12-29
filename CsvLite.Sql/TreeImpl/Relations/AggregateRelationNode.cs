@@ -1,12 +1,11 @@
-﻿using CsvLite.Models.Relations;
+﻿using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Models.Attributes;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Models.Records;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree;
-using CsvLite.Sql.Tree.Expressions;
+using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Relations;
-using CsvLite.Sql.TreeImpl.Expressions;
 using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
@@ -22,51 +21,62 @@ public class AggregateRelationNode : BaseInheritRelationNode
                 yield return value;
             }
 
-            yield return ExpressionNode;
+            foreach (var node in ReferenceNodes)
+            {
+                yield return node;
+            }
         }
     }
 
-    public NodeValue<IExpressionNode> ExpressionNode { get; }
-
-    private readonly IEnumerable<ExplicitAttributeReference> _attributeReferences;
+    public List<NodeValue<IAttributeReferenceNode>> ReferenceNodes { get; }
 
     public AggregateRelationNode(IRelationNode baseRelationNode) : base(baseRelationNode)
     {
-        _attributeReferences = Enumerable.Empty<ExplicitAttributeReference>();
-
-        ExpressionNode = new LiteralExpressionNode(true).ToNodeValue<IExpressionNode>();
+        ReferenceNodes = new List<NodeValue<IAttributeReferenceNode>>();
     }
 
     public AggregateRelationNode(IRelationNode baseRelationNode,
-        IEnumerable<ExplicitAttributeReference> attributeReferences) : base(baseRelationNode)
+        IEnumerable<IAttributeReferenceNode> referenceNodes) : base(baseRelationNode)
     {
-        _attributeReferences = attributeReferences;
-
-        ExpressionNode = new TupleExpressionNode(
-            _attributeReferences.Select(reference => new ExplicitAttributeReferenceExpressionNode(reference))
-        ).ToNodeValue<IExpressionNode>();
+        ReferenceNodes = referenceNodes
+            .Select(reference => reference.ToNodeValue())
+            .ToList();
     }
 
-    protected override IRelation Evaluate(IRelationContext context)
+    protected override IRelationContext Evaluate(IRelationContext context)
     {
-        var nonAggregateAttributeIndexes = _attributeReferences
-            .SelectMany(reference => context.Attributes.FindAttributes(reference))
-            .Select(x => x.Index)
+        var nonAggregateAttributeIndexes = ReferenceNodes
+            .SelectMany(reference =>
+            {
+                var result = reference.Value.GetAttributeIndexes(context, out var found);
+
+                return found == context
+                    ? result
+                    : Enumerable.Empty<int>();
+            })
             .ToHashSet();
 
-        return new InheritRelation(
+        if (ReferenceNodes.Count != 0 && nonAggregateAttributeIndexes.Count == 0)
+            return context;
+
+        var relation = new InheritRelation(
             context,
-            
             records: context.Records
                 .GroupBy(record =>
                 {
-                    var recordContext = context.CreateRecordContext(record);
+                    var recordContext = new RecordContext(context, record);
 
-                    return ExpressionNode.Evaluate(recordContext);
+                    var values = ReferenceNodes.SelectMany(
+                        node => node.Value.GetValues(recordContext, out _)
+                    );
+
+                    return new TupleValue(values);
                 })
                 .Select(group =>
                     new AggregateRecord(group, nonAggregateAttributeIndexes)
                 )
         );
+
+        return new InheritRelationContext(context, relation);
     }
 }

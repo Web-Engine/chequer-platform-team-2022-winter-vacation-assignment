@@ -3,6 +3,7 @@ using CsvLite.Models.Identifiers;
 using CsvLite.Models.Records;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.RelationContexts;
 using CsvLite.Sql.Models.Records;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree;
@@ -23,28 +24,28 @@ public class ValuesRelationNode : IRelationNode
         ExpressionNodes = expressionNodes.Select(node => node.ToNodeValue()).ToList();
     }
 
-    public IRelation Evaluate(IRootContext context)
+    public IRelationContext Evaluate(IRootContext context)
     {
-        var relationContext = context.CreateRelationContext(new EmptyRelation());
-        var recordContext = relationContext.CreateRecordContext(DefaultRecord.Empty);
+        var emptyRelationContext = new AnonymousRelationContext(context, new EmptyRelation());
+        var emptyRecordContext = new RecordContext(emptyRelationContext, DefaultRecord.Empty);
 
         var records = ExpressionNodes
-            .Select(node => node.Evaluate(recordContext).AsTuple().ToRecord())
+            .Select(node => node.Evaluate(emptyRecordContext).AsTuple().ToRecord())
             .ToList();
 
         if (records.Count == 0)
-            return new EmptyRelation();
+            return emptyRelationContext;
 
         var firstRecord = records.First();
 
-        var attributes = new DefaultAttributeList(
-            Enumerable.Range(0, firstRecord.Count)
-                .Select(_ => DefaultAttribute.Empty)
-        );
+        var attributes = Enumerable.Range(0, firstRecord.Count)
+            .Select(_ => DefaultAttribute.Empty);
 
-        return new DefaultRelation(
+        var relation = new DefaultRelation(
             attributes,
             records
         );
+
+        return new AnonymousRelationContext(context, relation);
     }
 }
