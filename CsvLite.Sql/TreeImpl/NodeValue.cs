@@ -1,4 +1,6 @@
-namespace CsvLite.Sql.Tree;
+using CsvLite.Sql.Tree;
+
+namespace CsvLite.Sql.TreeImpl;
 
 public sealed class NodeValue<TNode> : INodeValue where TNode : class, INode
 {

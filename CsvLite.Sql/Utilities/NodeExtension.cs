@@ -4,6 +4,7 @@ using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Tree.Relations;
+using CsvLite.Sql.TreeImpl;
 
 namespace CsvLite.Sql.Utilities;
 
