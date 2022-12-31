@@ -3,7 +3,8 @@ using CsvLite.Models.Identifiers;
 using CsvLite.Models.Records;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Contexts.RelationContexts;
+using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Models.Records;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree;
@@ -24,7 +25,7 @@ public class ValuesRelationNode : IRelationNode
         ExpressionNodes = expressionNodes.Select(node => node.ToNodeValue()).ToList();
     }
 
-    public IRelationContext Evaluate(IRootContext context)
+    public IRelationContext Evaluate(IContext context)
     {
         var emptyRelationContext = new AnonymousRelationContext(context, new EmptyRelation());
         var emptyRecordContext = new RecordContext(emptyRelationContext, DefaultRecord.Empty);

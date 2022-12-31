@@ -1,5 +1,6 @@
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Relations;
 using CsvLite.Sql.Utilities;
@@ -26,7 +27,7 @@ public abstract class BaseBinaryRelationNode : IRelationNode
         RelationNode2 = relationNode2.ToNodeValue();
     }
 
-    IRelationContext IRelationNode.Evaluate(IRootContext rootContext)
+    IRelationContext IRelationNode.Evaluate(IContext rootContext)
     {
         var context1 = Resolve1(rootContext);
         var context2 = Resolve2(rootContext, context1);
@@ -36,12 +37,12 @@ public abstract class BaseBinaryRelationNode : IRelationNode
         return Evaluate(context);
     }
 
-    protected virtual IRelationContext Resolve1(IRootContext context)
+    protected virtual IRelationContext Resolve1(IContext context)
     {
         return RelationNode1.Value.Evaluate(context);
     }
 
-    protected virtual IRelationContext Resolve2(IRootContext rootContext, IRelationContext context1)
+    protected virtual IRelationContext Resolve2(IContext rootContext, IRelationContext context1)
     {
         return RelationNode2.Value.Evaluate(context1);
     }

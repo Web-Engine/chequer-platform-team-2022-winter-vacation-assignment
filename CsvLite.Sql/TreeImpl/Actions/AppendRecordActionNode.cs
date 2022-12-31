@@ -28,7 +28,7 @@ public class AppendRecordActionNode : IActionNode
         ValueRelationNode = valueRelation.ToNodeValue();
     }
 
-    public IActionResult Execute(IRootContext context)
+    public IActionResult Execute(IContext context)
     {
         var targetRelationContext = TargetRelationNode.Value.Evaluate(context);
 

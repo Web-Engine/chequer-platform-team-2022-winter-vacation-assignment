@@ -1,11 +1,11 @@
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Identifiers;
-using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
+using CsvLite.Models.Relations;
 
-namespace CsvLite.Sql.Contexts;
+namespace CsvLite.Sql.Contexts.Relations;
 
-public interface IRelationContext : IRootContext
+public interface IRelationContext : IContext
 {
     IRelation Relation { get; }
 

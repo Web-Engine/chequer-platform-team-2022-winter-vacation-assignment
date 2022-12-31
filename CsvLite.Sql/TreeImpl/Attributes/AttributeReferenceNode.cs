@@ -1,6 +1,8 @@
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;

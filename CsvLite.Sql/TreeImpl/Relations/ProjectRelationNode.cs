@@ -1,7 +1,8 @@
 ﻿using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Contexts.RelationContexts;
+using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Attributes;
 using CsvLite.Sql.Tree.Relations;
@@ -39,7 +40,7 @@ public class ProjectRelationNode : BaseInheritRelationNode
             .ToList();
     }
 
-    protected override IRelationContext Resolve(IRootContext rootContext)
+    protected override IRelationContext Resolve(IContext rootContext)
     {
         var context = base.Resolve(rootContext);
 

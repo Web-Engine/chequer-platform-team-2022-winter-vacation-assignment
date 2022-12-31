@@ -2,6 +2,7 @@ using CsvLite.Models.Attributes;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.Relations;
 
 namespace CsvLite.Sql.Models.Relations;
 

@@ -1,8 +1,9 @@
 using CsvLite.Models.Identifiers;
-using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
+using CsvLite.Models.Relations;
+using CsvLite.Sql.Contexts.Relations;
 
-namespace CsvLite.Sql.Contexts;
+namespace CsvLite.Sql.Contexts.Records;
 
 public sealed class RecordContext : IRecordContext
 {

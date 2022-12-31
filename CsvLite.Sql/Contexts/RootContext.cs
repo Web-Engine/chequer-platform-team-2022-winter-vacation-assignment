@@ -1,10 +1,10 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
-using CsvLite.Sql.Contexts.RelationContexts;
+using CsvLite.Sql.Contexts.Relations;
 
 namespace CsvLite.Sql.Contexts;
 
-public class RootContext : IRootContext
+public class RootContext : IContext
 {
     public IContext? Parent => null;
     

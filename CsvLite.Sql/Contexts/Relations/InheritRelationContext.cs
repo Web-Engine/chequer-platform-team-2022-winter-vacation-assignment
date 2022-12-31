@@ -1,7 +1,7 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 
-namespace CsvLite.Sql.Contexts.RelationContexts;
+namespace CsvLite.Sql.Contexts.Relations;
 
 public class InheritRelationContext : IRelationContext
 {

@@ -1,25 +1,27 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 
-namespace CsvLite.Sql.Contexts.RelationContexts;
+namespace CsvLite.Sql.Contexts.Relations;
 
-public class AnonymousRelationContext : IRelationContext
+public class NamedRelationContext : IRelationContext
 {
-    IContext? IContext.Parent => Parent;
-
-    public IRootContext Parent { get; }
+    public IContext Parent { get; }
 
     public IRelation Relation { get; }
 
+    public Identifier Name { get; }
+
     public IEnumerable<QualifiedIdentifier> AttributeIdentifiers { get; }
 
-    public AnonymousRelationContext(IRootContext parent, IRelation relation)
+    public NamedRelationContext(IContext parent, Identifier name, IRelation relation)
     {
         Parent = parent;
+        Parent = parent;
         Relation = relation;
+        Name = name;
 
         AttributeIdentifiers = Relation.Attributes
-            .Select(x => new QualifiedIdentifier(Identifier.Empty, x.Name))
+            .Select(attribute => new QualifiedIdentifier(Name, attribute.Name))
             .ToList();
     }
 

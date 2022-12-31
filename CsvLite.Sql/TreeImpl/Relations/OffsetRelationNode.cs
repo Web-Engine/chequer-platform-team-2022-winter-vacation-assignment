@@ -1,5 +1,5 @@
 ﻿using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Contexts.RelationContexts;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree.Relations;
 

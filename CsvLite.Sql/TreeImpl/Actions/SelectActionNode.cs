@@ -23,7 +23,7 @@ public class SelectActionNode : IActionNode
         RelationNode = relationNode.ToNodeValue();
     }
 
-    public IActionResult Execute(IRootContext context)
+    public IActionResult Execute(IContext context)
     {
         var relationContext = RelationNode.Value.Evaluate(context);
 

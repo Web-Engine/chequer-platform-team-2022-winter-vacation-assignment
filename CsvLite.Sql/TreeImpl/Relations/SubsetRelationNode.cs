@@ -1,7 +1,7 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Contexts.RelationContexts;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree;

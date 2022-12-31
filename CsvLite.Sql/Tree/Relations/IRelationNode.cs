@@ -1,8 +1,9 @@
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.Relations;
 
 namespace CsvLite.Sql.Tree.Relations;
 
 public interface IRelationNode : INode
 {
-    IRelationContext Evaluate(IRootContext context);
+    IRelationContext Evaluate(IContext context);
 }

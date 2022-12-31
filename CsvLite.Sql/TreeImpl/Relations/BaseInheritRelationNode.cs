@@ -1,5 +1,6 @@
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Relations;
 using CsvLite.Sql.Utilities;
@@ -20,14 +21,14 @@ public abstract class BaseInheritRelationNode : IRelationNode
         RelationNode = relationNode.ToNodeValue();
     }
 
-    IRelationContext IRelationNode.Evaluate(IRootContext rootContext)
+    IRelationContext IRelationNode.Evaluate(IContext rootContext)
     {
         var context = Resolve(rootContext);
 
         return Evaluate(context);
     }
 
-    protected virtual IRelationContext Resolve(IRootContext rootContext)
+    protected virtual IRelationContext Resolve(IContext rootContext)
     {
         return RelationNode.Value.Evaluate(rootContext);
     }

@@ -1,6 +1,7 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Relations;
 
@@ -20,7 +21,7 @@ public class ReferenceRelationNode : IRelationNode
         Identifier = identifier;
     }
 
-    public IRelationContext Evaluate(IRootContext context)
+    public IRelationContext Evaluate(IContext context)
     {
         return context.GetPhysicalContext(Identifier);
     }
