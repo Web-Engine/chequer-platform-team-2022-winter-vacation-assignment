@@ -7,7 +7,7 @@ using CsvLite.Sql.Tree.Actions;
 
 namespace CsvLite.Sql.Engine;
 
-public class SqlEngine : IEngine
+public class SqlEngine : ISqlEngine
 {
     private readonly IPhysicalRelationProvider _provider;
 

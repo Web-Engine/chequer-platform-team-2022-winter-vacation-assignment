@@ -3,7 +3,7 @@ using CsvLite.Sql.Tree.Actions;
 
 namespace CsvLite.Sql.Engine;
 
-public interface IEngine
+public interface ISqlEngine
 {
     IExecuteResult Execute(IActionNode node);
 }

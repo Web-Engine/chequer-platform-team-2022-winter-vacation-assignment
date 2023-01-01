@@ -1,0 +1,1 @@
+SELECT first_name as first, last_name as last, first_name + last_name, first_name + last_name as full_name FROM "platform_team.csv"

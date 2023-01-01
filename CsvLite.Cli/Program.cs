@@ -2,6 +2,7 @@
 using System.Globalization;
 using CsvHelper;
 using CsvLite.IO.Csv;
+using CsvLite.Sql;
 using CsvLite.Sql.Engine;
 using CsvLite.Sql.Models.Results;
 using CsvLite.Sql.Models.Results.Executes;
@@ -94,7 +95,7 @@ public class Program
         var sqlEngine = new SqlEngine(relationProvider);
         var parser = new SqlParser();
         var optimizer = new RuleBasedOptimizer();
-        var relationPresenter = new RelationPresenter(Console.Out);
+        var relationPresenter = new RelationTextWriter(Console.Out);
 
         while (true)
         {
@@ -115,7 +116,7 @@ public class Program
                 var result = sqlEngine.Execute(action);
 
                 if (result is IRelationResult relationResult)
-                    relationPresenter.Show(relationResult.Relation);
+                    relationPresenter.Write(relationResult.Relation);
 
                 else if (result is IAppendRecordsResult appendRecordResult)
                     Console.WriteLine($"{appendRecordResult.Count} Rows Inserted");

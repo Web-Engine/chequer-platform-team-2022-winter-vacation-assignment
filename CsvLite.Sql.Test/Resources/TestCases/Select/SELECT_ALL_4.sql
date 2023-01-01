@@ -1,0 +1,1 @@
+SELECT * FROM "platform_team.csv" LIMIT 3, 2

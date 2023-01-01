@@ -1,0 +1,1 @@
+INSERT INTO "platform_team.csv" (first_name) VALUES ('kevin'), ('joy')

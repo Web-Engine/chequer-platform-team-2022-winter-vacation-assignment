@@ -1,19 +1,17 @@
 ﻿using CsvLite.Models.Relations;
-using CsvLite.Sql.Utilities;
-using CsvLite.Utilities;
 
-namespace CsvLite.Cli;
+namespace CsvLite.Sql;
 
-public class RelationPresenter
+public class RelationTextWriter
 {
     private readonly TextWriter _writer;
 
-    public RelationPresenter(TextWriter writer)
+    public RelationTextWriter(TextWriter writer)
     {
         _writer = writer;
     }
 
-    public void Show(IRelation relation)
+    public void Write(IRelation relation)
     {
         var columnsCount = relation.Attributes.Count;
 

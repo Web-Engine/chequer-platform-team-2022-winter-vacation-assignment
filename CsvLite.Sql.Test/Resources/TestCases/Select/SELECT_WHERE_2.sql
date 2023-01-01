@@ -1,0 +1,1 @@
+SELECT * FROM "platform_team.csv" WHERE last_name != 'choi'

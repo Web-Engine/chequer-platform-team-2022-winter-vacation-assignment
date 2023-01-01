@@ -1,0 +1,1 @@
+SELECT p.* FROM "platform_team.csv" p

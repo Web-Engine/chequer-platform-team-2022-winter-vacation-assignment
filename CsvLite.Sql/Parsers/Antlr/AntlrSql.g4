@@ -22,6 +22,7 @@ statementSelect
         clauseGroupBy?
         clauseOrderBy?
         clauseLimit?
+        clauseUnion?
 ;
 
 selectItemList
@@ -30,6 +31,7 @@ selectItemList
     
 selectItem
     : referenceAllAttribute                                 #selectItem_referenceAll
+    | referenceAttribute (AS? alias=identifier)?            #selectItem_reference
     | expression (AS? alias=identifier)?                    #selectItem_expression
 ;
 
@@ -69,6 +71,10 @@ clauseLimit
     : LIMIT count=literalInteger
     | LIMIT offset=literalInteger COMMA__ count=literalInteger
 ;
+
+clauseUnion
+    : UNION statementSelect
+    ;
 //endregion
 
 //region INSERT
@@ -237,6 +243,7 @@ INSERT: 'INSERT';
 INTO: 'INTO';
 VALUE: 'VALUE';
 VALUES: 'VALUES';
+UNION: 'UNION';
 
 NOT: 'NOT';
 

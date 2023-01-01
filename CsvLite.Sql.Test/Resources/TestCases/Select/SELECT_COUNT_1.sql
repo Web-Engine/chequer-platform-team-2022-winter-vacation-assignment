@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM "platform_team.csv"

@@ -1,0 +1,1 @@
+INSERT INTO "platform_team.csv" SELECT * FROM "backend_team.csv"

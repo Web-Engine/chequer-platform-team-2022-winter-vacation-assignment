@@ -1,0 +1,1 @@
+SELECT COUNT(*), first_name, last_name FROM "platform_team.csv" GROUP BY first_name, last_name

@@ -7,7 +7,7 @@ using static CsvLite.Sql.TreeImpl.Expressions.BinaryBooleanAlgebraExpressionNode
 
 namespace CsvLite.Sql.Optimizers;
 
-public sealed class RuleBasedOptimizer : IOptimizer
+public sealed class RuleBasedOptimizer : ISqlOptimizer
 {
     public TNode Optimize<TNode>(TNode node) where TNode : class, INode
     {

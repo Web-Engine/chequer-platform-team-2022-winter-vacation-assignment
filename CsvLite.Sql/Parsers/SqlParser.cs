@@ -6,7 +6,7 @@ using CsvLite.Sql.Tree.Actions;
 
 namespace CsvLite.Sql.Parsers;
 
-public class SqlParser
+public class SqlParser : ISqlParser
 {
     public IActionNode Parse(string sql)
     {

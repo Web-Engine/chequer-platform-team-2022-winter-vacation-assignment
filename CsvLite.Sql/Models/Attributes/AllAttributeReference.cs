@@ -20,6 +20,6 @@ public class AllAttributeReference : IAttributeReference
         if (identifier.Level <= 1)
             return false;
 
-        return _relationIdentifier.Equals(identifier.Last());
+        return _relationIdentifier.Equals(identifier.First());
     }
 }

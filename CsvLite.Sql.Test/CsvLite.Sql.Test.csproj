@@ -17,5 +17,11 @@
     <ItemGroup>
       <ProjectReference Include="..\CsvLite.Sql\CsvLite.Sql.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+using Antlr4.Runtime.Misc;
 using CsvLite.Models.Identifiers;
 using CsvLite.Sql.Models.Attributes;
 using CsvLite.Sql.Tree;
@@ -21,7 +22,7 @@ public static class RelationVisitor
         IRelationNode relationNode;
 
         if (context.clauseFrom() is { } clauseFrom)
-            relationNode = VisitClauseFrom(context.clauseFrom());
+            relationNode = VisitClauseFrom(clauseFrom);
         else
             relationNode = new EmptyRowRelationNode();
 
@@ -48,11 +49,16 @@ public static class RelationVisitor
 
         if (context.clauseLimit() is { } clauseLimitContext)
             relationNode = VisitClauseLimit(relationNode, clauseLimitContext);
-
-        return new ProjectRelationNode(
+        
+        relationNode = new ProjectRelationNode(
             relationNode,
             attributeDefinitionNodes
         );
+
+        if (context.clauseUnion() is { } clauseUnionContext)
+            relationNode = VisitClauseUnion(relationNode, clauseUnionContext);
+
+        return relationNode;
     }
 
     public static IEnumerable<IAttributeDefinitionNode> VisitSelectItemList(SelectItemListContext context)
@@ -65,6 +71,8 @@ public static class RelationVisitor
         return context switch
         {
             SelectItem_referenceAllContext referenceAllContext => VisitSelectItem_referenceAll(referenceAllContext),
+            SelectItem_referenceContext referenceAttributeContext => VisitSelectItem_reference(
+                referenceAttributeContext),
             SelectItem_expressionContext expressionContext => VisitSelectItem_expression(expressionContext),
 
             _ => throw new InvalidOperationException("Unknown SelectItemContext")
@@ -78,10 +86,31 @@ public static class RelationVisitor
         return new AllAttributeDefinitionNode(allReference);
     }
 
+    private static IAttributeDefinitionNode VisitSelectItem_reference(SelectItem_referenceContext context)
+    {
+        var reference = context.referenceAttribute();
+
+        var relationIdentifier = reference.relationIdentifier?.ToIdentifier();
+        var attributeIdentifier = reference.attributeIdentifier.ToIdentifier();
+
+        var qualifiedIdentifier = QualifiedIdentifier.Create(relationIdentifier, attributeIdentifier);
+
+        var alias = context.alias?.ToIdentifier() ?? attributeIdentifier;
+
+        return new ExpressionAttributeDefinitionNode(
+            alias,
+            new AttributeReferenceExpressionNode(
+                new AttributeReferenceNode(new ExplicitAttributeReference(qualifiedIdentifier))
+            )
+        );
+    }
+
     private static IAttributeDefinitionNode VisitSelectItem_expression(SelectItem_expressionContext context)
     {
         var expressionNode = ExpressionVisitor.VisitExpression(context.expression());
-        var name = context.alias?.ToIdentifier() ?? new Identifier(context.expression().GetText());
+        var name = context.alias?.ToIdentifier() ??
+                   new Identifier(context.Start.InputStream.GetText(new Interval(context.Start.StartIndex,
+                       context.Stop.StopIndex)));
 
         return new ExpressionAttributeDefinitionNode(name, expressionNode);
     }
@@ -180,6 +209,16 @@ public static class RelationVisitor
         return new LimitRelationNode(
             baseRelationNode,
             context.count.GetInteger()
+        );
+    }
+
+    public static IRelationNode VisitClauseUnion(IRelationNode baseRelationNode, ClauseUnionContext context)
+    {
+        var dataRelationNode = VisitStatementSelect(context.statementSelect());
+
+        return new ConcatRelationNode(
+            baseRelationNode,
+            dataRelationNode
         );
     }
 

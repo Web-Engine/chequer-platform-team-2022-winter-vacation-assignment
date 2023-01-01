@@ -22,6 +22,14 @@ public sealed class QualifiedIdentifier : IEnumerable<Identifier>
             .ToArray();
     }
 
+    public static QualifiedIdentifier Create(Identifier? relationIdentifier, Identifier attributeIdentifier)
+    {
+        if (relationIdentifier is null)
+            return new QualifiedIdentifier(attributeIdentifier);
+
+        return new QualifiedIdentifier(relationIdentifier, attributeIdentifier);
+    }
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
