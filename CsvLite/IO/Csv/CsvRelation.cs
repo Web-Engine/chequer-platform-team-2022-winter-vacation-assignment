@@ -7,11 +7,14 @@ using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
 using CsvLite.Models.Values;
+using CsvLite.Utilities;
 
 namespace CsvLite.IO.Csv;
 
 public class CsvRelation : IPhysicalRelation
 {
+    private const int CacheLimit = 100;
+    
     public IReadOnlyList<IAttribute> Attributes
     {
         get
@@ -24,45 +27,13 @@ public class CsvRelation : IPhysicalRelation
 
     private List<IAttribute>? _attributes;
 
-    public IEnumerable<IRecord> Records
-    {
-        get
-        {
-            lock (_cache)
-            {
-                foreach (var cache in _cache)
-                {
-                    yield return cache;
-                }
-
-                using var enumerator = CsvRecordsList.GetEnumerator();
-                for (var i = 0; i < _cache.Count; i++)
-                {
-                    if (!enumerator.MoveNext()) break;
-                }
-
-                for (var i = _cache.Count; i < _cacheLimit; i++)
-                {
-                    if (!enumerator.MoveNext())
-                        break;
-
-                    _cache.Add(enumerator.Current);
-
-                    yield return enumerator.Current;
-                }
-
-                while (enumerator.MoveNext())
-                    yield return enumerator.Current;
-            }
-        }
-    }
+    public IEnumerable<IRecord> Records => CsvRecordsList.Cache(_cache, CacheLimit);
 
     private CsvRecordList CsvRecordsList => new(_filePath);
 
     private readonly string _filePath;
 
-    private readonly List<IRecord> _cache = new(100);
-    private readonly int _cacheLimit = 100;
+    private readonly List<IRecord> _cache = new(CacheLimit);
 
     public CsvRelation(Identifier identifier)
     {
@@ -95,10 +66,11 @@ public class CsvRelation : IPhysicalRelation
     public void AddRecords(IEnumerable<IRecord> records)
     {
         using var streamWriter = new StreamWriter(_filePath, append: true);
-        using var csvWriter = new CsvWriter(streamWriter, new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HasHeaderRecord = false,
-        }, leaveOpen: true);
+        using var csvWriter = new CsvWriter(
+            streamWriter,
+            new CsvConfiguration(CultureInfo.InvariantCulture) {HasHeaderRecord = false},
+            leaveOpen: true
+        );
 
         foreach (var record in records)
         {
