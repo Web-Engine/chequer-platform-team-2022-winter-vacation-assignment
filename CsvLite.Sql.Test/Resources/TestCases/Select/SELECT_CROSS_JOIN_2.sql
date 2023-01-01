@@ -1,0 +1,1 @@
+SELECT * FROM "platform_team.csv" as platform, "backend_team.csv" as backend WHERE platform.last_name = backend.last_name 
