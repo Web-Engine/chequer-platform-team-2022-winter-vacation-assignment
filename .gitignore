@@ -4,3 +4,5 @@ bin/
 obj/
 /CsvLite.Sql/gen
 .DS_Store
+/drafts
+/CsvLite.Cli/datasets
