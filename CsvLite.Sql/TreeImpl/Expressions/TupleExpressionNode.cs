@@ -1,6 +1,7 @@
-﻿using CsvLite.Models.Values;
-using CsvLite.Sql.Contexts;
+﻿using CsvLite.Models.Domains;
+using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Utilities;
@@ -16,6 +17,13 @@ public class TupleExpressionNode : ITupleExpressionNode
     public TupleExpressionNode(IEnumerable<IExpressionNode> expressionNodes)
     {
         ExpressionNodes = expressionNodes.Select(node => node.ToNodeValue()).ToList();
+    }
+
+    public IDomain EvaluateDomain(IRelationContext context)
+    {
+        return new TupleDomain(
+            ExpressionNodes.Select(node => node.Value.EvaluateDomain(context))
+        );
     }
 
     public TupleValue Evaluate(IRecordContext context)

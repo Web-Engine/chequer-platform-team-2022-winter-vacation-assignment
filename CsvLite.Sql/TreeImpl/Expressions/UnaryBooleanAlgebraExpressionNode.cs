@@ -1,11 +1,11 @@
-﻿using CsvLite.Models.Values;
+﻿using CsvLite.Models.Domains;
+using CsvLite.Models.Values;
 using CsvLite.Models.Values.Primitives;
-using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Utilities;
-using CsvLite.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Expressions;
 
@@ -31,7 +31,13 @@ public class UnaryBooleanAlgebraExpressionNode : IPrimitiveExpressionNode
         _operator = @operator;
     }
 
-    PrimitiveValue IPrimitiveExpressionNode.Evaluate(IRecordContext context) => Evaluate(context);
+    PrimitiveValue IPrimitiveExpressionNode.EvaluateValue(IRecordContext context) => Evaluate(context);
+
+
+    public IDomain EvaluateDomain(IRelationContext context)
+    {
+        return new BooleanDomain();
+    }
 
     public BooleanValue Evaluate(IRecordContext context)
     {

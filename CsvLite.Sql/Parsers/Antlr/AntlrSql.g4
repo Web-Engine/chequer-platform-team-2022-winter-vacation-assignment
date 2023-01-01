@@ -29,9 +29,14 @@ selectItemList
 ;
     
 selectItem
-    : referenceAllAttribute                                 #selectItem_referenceAll
-    | expression (AS? alias=identifier)?                    #selectItem_expression
+    : referenceAllAttribute                                 #selectItem_all
+    | selecItemSingle (AS? alias=identifier)?               #selectItem_single
 ;
+
+selecItemSingle
+    : referenceAttribute                                    #selectItemSingle_referenceAttribute
+    | expression                                            #selectItemSingle_expression
+    ;
 
 clauseFrom
     : FROM fromItemList
@@ -125,7 +130,6 @@ expressionValue
     | left=expressionValue operator=(PLUS__ | DASH__) right=expressionValue                     #expressionValue_binary
     | expressionFunctionCall                                                                    #expressionValue_functionCall
     | expressionLiteral                                                                         #expressionValue_literal
-    | referenceAllAttribute                                                                     #expressionValue_referenceAllAttribute
     | referenceAttribute                                                                        #expressionValue_referenceAttribute
     ;
 
@@ -146,7 +150,9 @@ expressionList
 ;
 
 expressionFunctionCall
-    : identifier OPEN_PARENTHESIS__ expressionList CLOSE_PARENTHESIS__
+    : COUNT OPEN_PARENTHESIS__ ASTERISK__ CLOSE_PARENTHESIS__             #expressionFunctionCall_count
+    | COUNT OPEN_PARENTHESIS__ expression CLOSE_PARENTHESIS__             #expressionFunctionCall_count
+    | identifier OPEN_PARENTHESIS__ expressionList CLOSE_PARENTHESIS__    #expressionFunctionCall_function
 ;
 //endregion Expressions
 
@@ -203,12 +209,12 @@ CLOSE_PARENTHESIS__: ')';
 
 TILD__: '~';
 
-EQ__: '=';
-NEQ__: '!=';
-GT__: '>';
 GTE__: '>=';
-LT__: '<';
 LTE__: '<=';
+NEQ__: '!=';
+EQ__: '=';
+GT__: '>';
+LT__: '<';
 
 PLUS__: '+';
 DASH__: '-';
@@ -229,6 +235,7 @@ RIGHT: 'RIGHT';
 INNER: 'INNER';
 OUTER: 'OUTER';
 ON: 'ON';
+COUNT: 'COUNT';
 
 ORDER: 'ORDER';
 LIMIT: 'LIMIT';
@@ -250,11 +257,11 @@ DESC: 'DESC';
 
 IDENTIFIER: [a-z_][a-z0-9_]*;
 
+DOUBLE: [0-9]+ '.' [0-9]+;
+INTEGER: [0-9]+;
+
 DOUBLE_QUOTED_TEXT: '"' (~[\r\n"] | '\\"')* '"';
 SINGLE_QUOTED_TEXT: '\'' (~[\r\n'] | '\\\'')* '\'';
-
-INTEGER: [+-]?[0-9]+;
-DOUBLE: [+-]?[0-9]+ '.' [0-9]+;
 
 END_OF_STATEMENT__: ';';
 

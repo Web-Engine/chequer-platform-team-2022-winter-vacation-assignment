@@ -1,30 +1,14 @@
-﻿using CsvLite.Models.Attributes;
-using CsvLite.Models.Identifiers;
-using CsvLite.Models.Relations;
-using CsvLite.Sql.Contexts;
-using CsvLite.Sql.Contexts.Relations;
-using CsvLite.Sql.Models.Relations;
+﻿using CsvLite.Models.Identifiers;
 using CsvLite.Sql.Tree.Relations;
 
 namespace CsvLite.Sql.TreeImpl.Relations;
 
-public class AliasRelationNode : BaseInheritRelationNode
+public class AliasRelationNode : BaseInheritRelationNode, INamedRelationNode
 {
-    private readonly Identifier _alias;
+    public Identifier Identifier { get; }
 
     public AliasRelationNode(IRelationNode baseRelationNode, Identifier alias) : base(baseRelationNode)
     {
-        _alias = alias;
-    }
-
-    protected override IRelationContext Resolve(IContext rootContext)
-    {
-        var baseContext = base.Resolve(rootContext);
-
-        return new NamedRelationContext(
-            rootContext,
-            _alias,
-            baseContext.Relation
-        );
+        Identifier = alias;
     }
 }

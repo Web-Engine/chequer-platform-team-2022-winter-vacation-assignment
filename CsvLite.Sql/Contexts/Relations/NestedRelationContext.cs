@@ -1,13 +1,14 @@
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
+using CsvLite.Sql.Contexts.Records;
 
 namespace CsvLite.Sql.Contexts.Relations;
 
 public class NestedRelationContext : IRelationContext
 {
-    IContext? IContext.Parent => Parent;
+    IContext IRelationContext.Parent => Parent;
 
-    public IRelationContext Parent { get; }
+    public IRecordContext Parent { get; }
 
     public IRelationContext Child { get; }
 
@@ -15,7 +16,7 @@ public class NestedRelationContext : IRelationContext
 
     public IEnumerable<QualifiedIdentifier> AttributeIdentifiers => Child.AttributeIdentifiers;
 
-    public NestedRelationContext(IRelationContext parent, IRelationContext child)
+    public NestedRelationContext(IRecordContext parent, IRelationContext child)
     {
         Parent = parent;
         Child = child;

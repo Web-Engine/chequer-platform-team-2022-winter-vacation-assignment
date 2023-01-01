@@ -3,24 +3,14 @@ using CsvLite.Models.Relations;
 
 namespace CsvLite.Sql.Contexts.Relations;
 
-public class InheritRelationContext : IRelationContext
+public class InheritRelationContext : BaseRelationContext
 {
-    IContext? IContext.Parent => Inherit.Parent;
-
     public IRelationContext Inherit { get; }
 
-    public IRelation Relation { get; }
+    public override IEnumerable<QualifiedIdentifier> AttributeIdentifiers => Inherit.AttributeIdentifiers;
 
-    public IEnumerable<QualifiedIdentifier> AttributeIdentifiers => Inherit.AttributeIdentifiers;
-
-    public InheritRelationContext(IRelationContext inherit, IRelation relation)
+    public InheritRelationContext(IRelationContext inherit, IRelation relation) : base(inherit.Parent, relation)
     {
         Inherit = inherit;
-        Relation = relation;
-    }
-
-    public IRelationContext GetPhysicalContext(Identifier identifier)
-    {
-        return Inherit.GetPhysicalContext(identifier);
     }
 }

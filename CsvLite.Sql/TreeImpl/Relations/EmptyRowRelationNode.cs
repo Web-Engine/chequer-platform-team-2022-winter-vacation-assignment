@@ -1,5 +1,5 @@
-using CsvLite.Models.Identifiers;
-using CsvLite.Models.Relations;
+using CsvLite.Models.Attributes;
+using CsvLite.Models.Records;
 using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Models.Relations;
@@ -18,5 +18,15 @@ public class EmptyRowRelationNode : IRelationNode
     public IRelationContext Evaluate(IContext context)
     {
         return new AnonymousRelationContext(context, new EmptyRowRelation());
+    }
+
+    public IEnumerable<IAttribute> EvaluateAttributes(IContext context)
+    {
+        return Enumerable.Empty<IAttribute>();
+    }
+
+    public IEnumerable<IRecord> EvaluateRecords(IRelationContext context)
+    {
+        yield return new DefaultRecord();
     }
 }

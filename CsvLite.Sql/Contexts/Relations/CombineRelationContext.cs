@@ -5,7 +5,7 @@ namespace CsvLite.Sql.Contexts.Relations;
 
 public class CombineRelationContext : IRelationContext
 {
-    public IContext? Parent => Context1.Parent;
+    public IContext Parent => Context1.Parent;
 
     public IRelation Relation { get; }
 

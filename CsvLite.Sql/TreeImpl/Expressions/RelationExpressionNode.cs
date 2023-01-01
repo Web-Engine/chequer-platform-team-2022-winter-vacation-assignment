@@ -1,6 +1,7 @@
+using CsvLite.Models.Domains;
 using CsvLite.Models.Values;
-using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Tree.Relations;
@@ -22,7 +23,14 @@ public class RelationExpressionNode : IExpressionNode
         RelationNode = relationNode.ToNodeValue();
     }
 
-    public IValue Evaluate(IRecordContext context)
+    public IDomain EvaluateDomain(IRelationContext context)
+    {
+        var attributes = RelationNode.Value.EvaluateAttributes(context);
+
+        return new RelationDomain(attributes);
+    }
+
+    public IValue EvaluateValue(IRecordContext context)
     {
         var relationContext = RelationNode.Evaluate(context);
 

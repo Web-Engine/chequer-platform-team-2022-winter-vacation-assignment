@@ -7,8 +7,6 @@ namespace CsvLite.Sql.Contexts.Records;
 
 public sealed class RecordContext : IRecordContext
 {
-    IContext? IContext.Parent => Parent;
-
     public IRelationContext Parent { get; }
 
     public IRelation Relation => Parent.Relation;

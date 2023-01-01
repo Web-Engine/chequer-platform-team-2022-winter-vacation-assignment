@@ -1,15 +1,17 @@
+using CsvLite.Models.Domains;
 using CsvLite.Models.Identifiers;
 
 namespace CsvLite.Models.Attributes;
 
 public class DefaultAttribute : IAttribute
 {
-    public static readonly IAttribute Empty = new DefaultAttribute(Identifier.Empty);
+    public Identifier Identifier { get; }
     
-    public Identifier Name { get; }
+    public IPrimitiveDomain Domain { get; }
 
-    public DefaultAttribute(Identifier attributeIdentifier)
+    public DefaultAttribute(Identifier identifier, IPrimitiveDomain domain)
     {
-        Name = attributeIdentifier;
+        Identifier = identifier;
+        Domain = domain;
     }
 }

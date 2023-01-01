@@ -2,7 +2,7 @@ using CsvLite.Models.Values;
 
 namespace CsvLite.Models.Records;
 
-public class DefaultRecord : List<IValue>, IRecord
+public sealed class DefaultRecord : List<IValue>, IRecord
 {
     public static readonly IRecord Empty = new DefaultRecord();
 

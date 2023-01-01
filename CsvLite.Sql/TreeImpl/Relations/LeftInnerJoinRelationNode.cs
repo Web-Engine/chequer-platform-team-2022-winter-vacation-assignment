@@ -49,7 +49,7 @@ public class LeftInnerJoinRelationNode : BaseBinaryRelationNode
                 {
                     var record2Context = new RecordContext(nestedContext, record2);
 
-                    return ExpressionNode.Value.Evaluate(record2Context).AsBoolean().Value;
+                    return ExpressionNode.Value.EvaluateValue(record2Context).AsBoolean().Value;
                 })
                 .Select(record2 => new ConcatRecord(record1, record2));
         });

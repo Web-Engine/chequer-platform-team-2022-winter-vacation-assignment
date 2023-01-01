@@ -7,6 +7,10 @@ namespace CsvLite.Sql.Contexts.Relations;
 
 public interface IRelationContext : IContext
 {
+    IContext? IContext.Parent => Parent;
+    
+    new IContext Parent { get; }
+
     IRelation Relation { get; }
 
     IReadOnlyList<IAttribute> Attributes => Relation.Attributes;

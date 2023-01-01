@@ -3,10 +3,10 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvLite.Models.Attributes;
+using CsvLite.Models.Domains;
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Relations;
 using CsvLite.Models.Records;
-using CsvLite.Models.Values;
 
 namespace CsvLite.IO.Csv;
 
@@ -30,6 +30,8 @@ public class CsvRelation : IPhysicalRelation
         {
             lock (_cache)
             {
+                var domains = Attributes.Select(attribute => attribute.Domain).ToList();
+
                 foreach (var cache in _cache)
                 {
                     yield return cache;
@@ -46,13 +48,14 @@ public class CsvRelation : IPhysicalRelation
                     if (!enumerator.MoveNext())
                         break;
 
-                    _cache.Add(enumerator.Current);
-
-                    yield return enumerator.Current;
+                    var record = ParseRecord(enumerator.Current, domains);
+                    _cache.Add(record);
+                    
+                    yield return record;
                 }
 
                 while (enumerator.MoveNext())
-                    yield return enumerator.Current;
+                    yield return ParseRecord(enumerator.Current, domains);
             }
         }
     }
@@ -80,14 +83,30 @@ public class CsvRelation : IPhysicalRelation
         if (csvReader.HeaderRecord is not { } headerRecord)
             throw new InvalidOperationException("Missing CSV Header Records");
 
-        var attributes = new List<IAttribute>(
-            headerRecord.Select(name =>
-            {
-                var attributeIdentifier = new Identifier(name);
+        var detectors = Enumerable.Range(0, headerRecord.Length).Select(_ => new DomainDetector()).ToArray();
 
-                return new DefaultAttribute(attributeIdentifier);
+        foreach (var record in CsvRecordsList.Take(10))
+        {
+            for (var i = 0; i < headerRecord.Length; i++)
+            {
+                var value = record[i];
+
+                detectors[i].Detect(value);
+            }
+        }
+
+        var attributes = headerRecord
+            .Zip(detectors)
+            .Select((tuple) =>
+            {
+                var headerName = tuple.First;
+                var detector = tuple.Second;
+
+                var identifier = new Identifier(headerName);
+
+                return new DefaultAttribute(identifier, detector.Domain);
             })
-        );
+            .ToList<IAttribute>();
 
         return attributes;
     }
@@ -111,7 +130,22 @@ public class CsvRelation : IPhysicalRelation
         }
     }
 
-    private class CsvRecordList : IEnumerable<IRecord>
+    private static IRecord ParseRecord(IReadOnlyList<string?> data, IEnumerable<IPrimitiveDomain> domains)
+    {
+        var values = data
+            .Zip(domains)
+            .Select(tuple =>
+            {
+                var value = tuple.First;
+                var domain = tuple.Second;
+
+                return domain.Parse(value);
+            });
+
+        return new DefaultRecord(values);
+    }
+
+    private class CsvRecordList : IEnumerable<IReadOnlyList<string?>>
     {
         private readonly string _filePath;
 
@@ -125,21 +159,21 @@ public class CsvRelation : IPhysicalRelation
             return GetEnumerator();
         }
 
-        public IEnumerator<IRecord> GetEnumerator()
+        public IEnumerator<IReadOnlyList<string?>> GetEnumerator()
         {
             return new CsvRecordEnumerator(_filePath);
         }
     }
 
-    private class CsvRecordEnumerator : IEnumerator<IRecord>
+    private class CsvRecordEnumerator : IEnumerator<IReadOnlyList<string?>>
     {
         private readonly StreamReader _streamReader;
         private readonly CsvReader _csvReader;
 
-        public IRecord Current => _current ?? throw new InvalidOperationException();
+        public IReadOnlyList<string?> Current => _current ?? throw new InvalidOperationException();
         object IEnumerator.Current => Current;
 
-        private IRecord? _current;
+        private IReadOnlyList<string?>? _current;
         private readonly int _attributeCount;
 
         public CsvRecordEnumerator(string filePath)
@@ -159,11 +193,9 @@ public class CsvRelation : IPhysicalRelation
             var read = _csvReader.Read();
             if (!read) return false;
 
-            _current = new DefaultRecord(
-                Enumerable.Range(0, _attributeCount)
-                    .Select(index => _csvReader.GetField(index))
-                    .Select(PrimitiveValue.Parse)
-            );
+            _current = Enumerable.Range(0, _attributeCount)
+                .Select(index => _csvReader.GetField(index))
+                .ToList();
 
             return true;
         }

@@ -1,11 +1,10 @@
 using CsvLite.Models.Attributes;
+using CsvLite.Models.Domains;
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Records;
-using CsvLite.Models.Relations;
 using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
 using CsvLite.Sql.Contexts.Relations;
-using CsvLite.Sql.Models.Records;
 using CsvLite.Sql.Models.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
@@ -18,35 +17,52 @@ public class ValuesRelationNode : IRelationNode
 {
     public IEnumerable<INodeValue> Children => ExpressionNodes;
 
-    public List<NodeValue<IExpressionNode>> ExpressionNodes { get; set; }
+    public List<NodeValue<ITupleExpressionNode>> ExpressionNodes { get; set; }
 
-    public ValuesRelationNode(IEnumerable<IExpressionNode> expressionNodes)
+    public ValuesRelationNode(IEnumerable<ITupleExpressionNode> expressionNodes)
     {
         ExpressionNodes = expressionNodes.Select(node => node.ToNodeValue()).ToList();
     }
 
-    public IRelationContext Evaluate(IContext context)
+    public IEnumerable<IAttribute> EvaluateAttributes(IContext context)
     {
-        var emptyRelationContext = new AnonymousRelationContext(context, new EmptyRelation());
-        var emptyRecordContext = new RecordContext(emptyRelationContext, DefaultRecord.Empty);
+        IRelationContext relationContext = new AnonymousRelationContext(context, new EmptyRelation());
 
-        var records = ExpressionNodes
-            .Select(node => node.Evaluate(emptyRecordContext).AsTuple().ToRecord())
+        if (ExpressionNodes.Count == 0)
+            return Enumerable.Empty<IAttribute>();
+
+        var tupleDomain = ExpressionNodes
+            .Select(node => node.Value.EvaluateDomain(relationContext))
+            .Aggregate((domain1, domain2) =>
+            {
+                if (!domain1.Domains.SequenceEqual(domain2.Domains))
+                    throw new InvalidOperationException("VALUES domain should be same");
+
+                return domain1;
+            });
+
+        var domains = tupleDomain.Domains
+            .Select(domain =>
+            {
+                if (domain is not IPrimitiveDomain primitiveDomain)
+                    throw new InvalidOperationException("VALUES cannot have non-primitive value");
+
+                return primitiveDomain;
+            })
             .ToList();
 
-        if (records.Count == 0)
-            return emptyRelationContext;
+        return domains.Select(domain => new DefaultAttribute(Identifier.Empty, domain));
+    }
 
-        var firstRecord = records.First();
+    public IEnumerable<IRecord> EvaluateRecords(IRelationContext context)
+    {
+        IRecordContext recordContext = new RecordContext(context, new DefaultRecord());
 
-        var attributes = Enumerable.Range(0, firstRecord.Count)
-            .Select(_ => DefaultAttribute.Empty);
+        return ExpressionNodes.Select(node =>
+        {
+            var tupleValue = node.Value.EvaluateValue(recordContext);
 
-        var relation = new DefaultRelation(
-            attributes,
-            records
-        );
-
-        return new AnonymousRelationContext(context, relation);
+            return new DefaultRecord(tupleValue);
+        });
     }
 }

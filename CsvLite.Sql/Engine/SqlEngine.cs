@@ -9,9 +9,9 @@ namespace CsvLite.Sql.Engine;
 
 public class SqlEngine : IEngine
 {
-    private readonly IPhysicalRelationProvider _provider;
+    private readonly IRelationProvider _provider;
 
-    public SqlEngine(IPhysicalRelationProvider provider)
+    public SqlEngine(IRelationProvider provider)
     {
         _provider = provider;
     }

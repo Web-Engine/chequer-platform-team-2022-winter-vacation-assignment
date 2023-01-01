@@ -24,7 +24,7 @@ public class RelationPresenter
         PrintHorizontalLine(columnWidths);
         PrintValues(
             columnWidths.Zip(
-                relation.Attributes.Select(attribute => attribute.Name.Value)
+                relation.Attributes.Select(attribute => attribute.Identifier.Value)
             )
         );
         PrintHorizontalLine(columnWidths);
@@ -45,7 +45,7 @@ public class RelationPresenter
     {
         return relation.Records
             .Select(record => record[index].AsString().Value)
-            .Append(relation.Attributes[index].Name.Value)
+            .Append(relation.Attributes[index].Identifier.Value)
             .Select(value => value.Length)
             .Max();
     }

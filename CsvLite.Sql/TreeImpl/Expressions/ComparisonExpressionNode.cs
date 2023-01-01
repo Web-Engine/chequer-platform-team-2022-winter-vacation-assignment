@@ -1,7 +1,9 @@
-﻿using CsvLite.Models.Values;
+﻿using CsvLite.Models.Domains;
+using CsvLite.Models.Values;
 using CsvLite.Models.Values.Primitives;
 using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Utilities;
@@ -44,17 +46,23 @@ public class ComparisonExpressionNode : IPrimitiveExpressionNode
         ExpressionNode2 = expressionNode2.ToNodeValue();
     }
 
-    PrimitiveValue IPrimitiveExpressionNode.Evaluate(IRecordContext context) => Evaluate(context);
+    PrimitiveValue IPrimitiveExpressionNode.EvaluateValue(IRecordContext context) => EvaluateValue(context);
 
-    public BooleanValue Evaluate(IRecordContext context)
+
+    public IDomain EvaluateDomain(IRelationContext context)
+    {
+        return new BooleanDomain();
+    }
+
+    public BooleanValue EvaluateValue(IRecordContext context)
     {
         var value1 = ExpressionNode1.Evaluate(context).AsPrimitive();
         var value2 = ExpressionNode2.Evaluate(context).AsPrimitive();
 
-        return Evaluate(value1, value2);
+        return EvaluateValue(value1, value2);
     }
 
-    public BooleanValue Evaluate(PrimitiveValue value1, PrimitiveValue value2)
+    public BooleanValue EvaluateValue(PrimitiveValue value1, PrimitiveValue value2)
     {
         return (value1, value2) switch
         {
@@ -63,7 +71,7 @@ public class ComparisonExpressionNode : IPrimitiveExpressionNode
             (IntegerValue int1, IntegerValue int2) => EvaluateInteger(int1, int2),
             (StringValue str1, StringValue str2) => EvaluateString(str1, str2),
 
-            _ => throw new IOException("Cannot compare")
+            _ => throw new IOException($"Cannot compare {value1} and {value2}")
         };
     }
 

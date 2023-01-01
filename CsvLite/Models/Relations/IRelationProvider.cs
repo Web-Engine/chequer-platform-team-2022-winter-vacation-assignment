@@ -2,7 +2,7 @@ using CsvLite.Models.Identifiers;
 
 namespace CsvLite.Models.Relations;
 
-public interface IPhysicalRelationProvider
+public interface IRelationProvider
 {
     IPhysicalRelation GetRelation(Identifier identifier);
 }

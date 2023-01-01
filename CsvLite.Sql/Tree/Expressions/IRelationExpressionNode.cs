@@ -6,7 +6,7 @@ namespace CsvLite.Sql.Tree.Expressions;
 
 public interface IRelationExpressionNode : IExpressionNode
 {
-    IValue IExpressionNode.Evaluate(IRecordContext context) => Evaluate(context);
+    IValue IExpressionNode.EvaluateValue(IRecordContext context) => Evaluate(context);
 
     new RelationValue Evaluate(IRecordContext context);
 }

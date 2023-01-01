@@ -84,7 +84,7 @@ public sealed class RuleBasedOptimizer : IOptimizer
         )
             return node;
 
-        var value = node.Evaluate(literal1.Value, literal2.Value);
+        var value = node.EvaluateValue(literal1.Value, literal2.Value);
 
         return new LiteralExpressionNode(value);
     }
@@ -136,7 +136,7 @@ public sealed class RuleBasedOptimizer : IOptimizer
             return node;
         }
 
-        var value = node.Evaluate(literal1.Value, literal2.Value);
+        var value = node.EvaluateValue(literal1.Value, literal2.Value);
         return new LiteralExpressionNode(value);
     }
 }

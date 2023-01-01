@@ -4,9 +4,9 @@ using CsvLite.Models.Relations;
 
 namespace CsvLite.IO.Csv;
 
-public class CsvRelationProvider : IPhysicalRelationProvider
+public class CsvRelationProvider : IRelationProvider
 {
-    IPhysicalRelation IPhysicalRelationProvider.GetRelation(Identifier identifier) => GetRelation(identifier);
+    IPhysicalRelation IRelationProvider.GetRelation(Identifier identifier) => GetRelation(identifier);
 
     public CsvRelation GetRelation(Identifier identifier)
     {

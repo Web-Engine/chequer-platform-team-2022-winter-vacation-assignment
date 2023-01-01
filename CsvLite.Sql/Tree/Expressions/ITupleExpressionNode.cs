@@ -1,12 +1,17 @@
+using CsvLite.Models.Domains;
 using CsvLite.Models.Values;
-using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 
 namespace CsvLite.Sql.Tree.Expressions;
 
 public interface ITupleExpressionNode : IExpressionNode
 {
-    IValue IExpressionNode.Evaluate(IRecordContext context) => Evaluate(context);
+    IValue IExpressionNode.EvaluateValue(IRecordContext context) => EvaluateValue(context);
 
-    new TupleValue Evaluate(IRecordContext context);
+    IDomain IExpressionNode.EvaluateDomain(IRelationContext context) => EvaluateDomain(context);
+
+    new TupleValue EvaluateValue(IRecordContext context);
+
+    new TupleDomain EvaluateDomain(IRelationContext context);
 }

@@ -3,26 +3,19 @@ using CsvLite.Models.Relations;
 
 namespace CsvLite.Sql.Contexts.Relations;
 
-public class AnonymousRelationContext : IRelationContext
+public class AnonymousRelationContext : BaseRelationContext
 {
-    public IContext Parent { get; }
-
-    public IRelation Relation { get; }
-
-    public IEnumerable<QualifiedIdentifier> AttributeIdentifiers { get; }
-
-    public AnonymousRelationContext(IContext parent, IRelation relation)
+    public override IEnumerable<QualifiedIdentifier> AttributeIdentifiers
     {
-        Parent = parent;
-        Relation = relation;
-
-        AttributeIdentifiers = Relation.Attributes
-            .Select(x => new QualifiedIdentifier(Identifier.Empty, x.Name))
-            .ToList();
+        get
+        {
+            return Relation.Attributes.Select(
+                attribute => new QualifiedIdentifier(Identifier.Empty, attribute.Identifier)
+            );
+        }
     }
 
-    public IRelationContext GetPhysicalContext(Identifier identifier)
+    public AnonymousRelationContext(IContext parent, IRelation relation) : base(parent, relation)
     {
-        return Parent.GetPhysicalContext(identifier);
     }
 }

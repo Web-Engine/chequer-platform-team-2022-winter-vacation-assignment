@@ -1,7 +1,6 @@
 using CsvLite.Models.Attributes;
 using CsvLite.Models.Identifiers;
 using CsvLite.Models.Values;
-using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
 using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
@@ -11,7 +10,7 @@ using CsvLite.Sql.Utilities;
 
 namespace CsvLite.Sql.TreeImpl.Attributes;
 
-public class ExpressionAttributeDefinitionNode : IAttributeDefinitionNode
+public class ExpressionAttributeDefinitionNode : IExplicitAttributeDefinitionNode
 {
     public IEnumerable<INodeValue> Children
     {
@@ -22,19 +21,21 @@ public class ExpressionAttributeDefinitionNode : IAttributeDefinitionNode
 
     private readonly Identifier _name;
 
-    public ExpressionAttributeDefinitionNode(Identifier name, IExpressionNode expressionNode)
+    public ExpressionAttributeDefinitionNode(IExpressionNode expressionNode, Identifier name)
     {
-        _name = name;
         ExpressionNode = expressionNode.ToNodeValue();
+        _name = name;
     }
 
-    public IEnumerable<IAttribute> EvaluateAttributes(IRelationContext context)
+    public IAttribute EvaluateAttribute(IRelationContext context)
     {
-        yield return new DefaultAttribute(_name);
+        var domain = ExpressionNode.Value.EvaluateDomain(context);
+
+        return new DefaultAttribute(_name, domain);
     }
 
-    public IEnumerable<IValue> EvaluateValues(IRecordContext context)
+    public IValue EvaluateValue(IRecordContext context)
     {
-        yield return ExpressionNode.Value.Evaluate(context);
+        return ExpressionNode.Value.EvaluateValue(context);
     }
 }

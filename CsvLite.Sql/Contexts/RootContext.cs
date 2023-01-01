@@ -8,9 +8,9 @@ public class RootContext : IContext
 {
     public IContext? Parent => null;
     
-    private readonly IPhysicalRelationProvider _provider;
+    private readonly IRelationProvider _provider;
 
-    public RootContext(IPhysicalRelationProvider provider)
+    public RootContext(IRelationProvider provider)
     {
         _provider = provider;
     }

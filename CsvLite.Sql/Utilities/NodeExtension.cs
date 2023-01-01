@@ -37,7 +37,7 @@ public static class NodeExtension
 
     public static IValue Evaluate(this NodeValue<IExpressionNode> node, IRecordContext context)
     {
-        return node.Value.Evaluate(context);
+        return node.Value.EvaluateValue(context);
     }
     
     public static IRelationContext Evaluate(this NodeValue<IRelationNode> node, IRelationContext context)

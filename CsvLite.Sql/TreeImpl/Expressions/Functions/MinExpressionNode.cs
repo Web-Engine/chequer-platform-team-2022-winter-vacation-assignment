@@ -1,6 +1,8 @@
+using CsvLite.Models.Domains;
 using CsvLite.Models.Values;
 using CsvLite.Sql.Contexts;
 using CsvLite.Sql.Contexts.Records;
+using CsvLite.Sql.Contexts.Relations;
 using CsvLite.Sql.Tree;
 using CsvLite.Sql.Tree.Expressions;
 using CsvLite.Sql.Utilities;
@@ -21,7 +23,12 @@ public class MinExpressionNode : IExpressionNode
         ExpressionNode = expressionNode.ToNodeValue();
     }
 
-    public IValue Evaluate(IRecordContext context)
+    public IDomain EvaluateDomain(IRelationContext context)
+    {
+        return new IntegerDomain();
+    }
+
+    public IValue EvaluateValue(IRecordContext context)
     {
         var value = ExpressionNode.Evaluate(context);
 
